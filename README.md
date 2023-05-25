@@ -14,8 +14,8 @@ Edit the conf.ini beside rust_clock.
 time=:30:
 ```
 ``` ini
-# popup every half hour and 15:50:00
-time=:30:,15:50:
+# popup every half hour and every begining of minute in 15 o'clock
+time=:30:,15::
 ```
 + sound
 > The sound file you wish to play when clock popup.
