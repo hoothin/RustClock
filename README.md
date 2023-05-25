@@ -4,7 +4,7 @@
 
 Clock popup every half hour. Build with [rust](https://github.com/rust-lang/rust)|[egui](https://github.com/emilk/egui/)|[rodio](https://github.com/RustAudio/rodio)|[tray-icon](https://github.com/tauri-apps/tray-icon)|[chrono](https://github.com/chronotope/chrono)|[rust-ini](https://github.com/zonyitoo/rust-ini)
 
-![example](pic.png)
+![example](pic.gif)
 # Config
 Edit the conf.ini beside rust_clock.
 + time
