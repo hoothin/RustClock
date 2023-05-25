@@ -1,4 +1,7 @@
 # Rust Clock
+![license](https://img.shields.io/badge/license-MIT-red.svg)
+![download](https://img.shields.io/github/downloads/hoothin/RustClock/total)
+
 Clock popup every half hour. Build with [rust](https://github.com/rust-lang/rust)|[egui](https://github.com/emilk/egui/)|[rodio](https://github.com/RustAudio/rodio)|[tray-icon](https://github.com/tauri-apps/tray-icon)
 
 ![example](pic.png)
