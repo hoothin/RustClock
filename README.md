@@ -3,7 +3,7 @@ Clock popup every half hour. Build with [rust](https://github.com/rust-lang/rust
 
 ![example](pic.png)
 # Config
-Edit the cong.ini with rust_clock.
+Edit the conf.ini with rust_clock.
 + time
 The time when rust clock will popup, set by `hour:minute:second`. Split multi-time by `,`.
 ``` ini
