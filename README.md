@@ -15,7 +15,7 @@ time=:30:
 ```
 ``` ini
 # popup every half hour and every begining of minute in 15 o'clock
-time=:30:,15::
+time=:30:,15::0
 ```
 + sound
 > The sound file you wish to play when clock popup.
