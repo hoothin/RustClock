@@ -141,7 +141,7 @@ impl eframe::App for MyApp {
                     let single_time: Vec<&str> = x.split(':').collect();
                     if (single_time[0] == "" || single_time[0] == hour) &&
                     (single_time[1] == "" || single_time[1] == minute) &&
-                    (single_time[2] == "" || single_time[2] == second) {
+                    ((single_time[2] == "" && second == "0") || single_time[2] == second) {
                         self.last_visible = self.visible;
                         if let Some(pos) = frame.get_window_pos() {
                             self.last_pos_x = pos.x;
