@@ -1,0 +1,57 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/ecolor",
+    "crates/egui_demo_app",
+    "crates/egui_demo_lib",
+    "crates/egui_extras",
+    "crates/egui_glow",
+    "crates/egui-wgpu",
+    "crates/egui-winit",
+    "crates/egui",
+    "crates/emath",
+    "crates/epaint",
+]
+
+[package]
+name = "rust_clock"
+authors = ["Hoothin <rixixi@gmail.com>"]
+license = "MIT"
+version = "0.1.0"
+edition = "2021"
+description = "Clock popup every half hour"
+build = "build.rs"
+
+[dependencies]
+eframe = { path = "crates/eframe", features = [
+    "__screenshot", # __screenshot is so we can dump a ascreenshot using EFRAME_SCREENSHOT_TO
+] }
+tray-icon = "0.5.1"
+image = "0.24"
+chrono = "0.4.24"
+rust-ini = "0.19.0"
+rodio = "0.17.1"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+# Optimize all dependencies even in debug builds (does not affect workspace packages):
+[profile.dev.package."*"]
+opt-level = "z"
+
+[patch.crates-io]
+winit = { git = "https://github.com/rust-windowing/winit", rev = "2e4338bb8dddf820c9bcda23d6b7a0d8a6208831" }
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
+panic = 'abort'
+
+[package.metadata.winres]
+OriginalFilename = "rust_clock.exe"
+LegalCopyright = "Copyright Hoothin © 2023"
+FileDescription = "Clock popup every half hour"
+
+[build-dependencies]
+winres = "0.1"
