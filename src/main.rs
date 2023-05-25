@@ -96,7 +96,8 @@ struct MyApp {
     last_pos_x: f32,
     last_pos_y: f32,
     last_visible: bool,
-    sound_path: String
+    sound_path: String,
+    inited: bool
 }
 
 impl eframe::App for MyApp {
@@ -107,6 +108,20 @@ impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         let init_x = -310.0;
         let init_y = 50.0;
+        if self.inited == false {
+            self.inited = true;
+            let mut fonts = egui::FontDefinitions::default();
+            fonts.font_data.insert(
+                "my_font".to_owned(),
+                egui::FontData::from_static(include_bytes!("../assets/font.ttf")),
+            );
+            fonts
+                .families
+                .entry(egui::FontFamily::Proportional)
+                .or_default()
+                .insert(0, "my_font".to_owned());
+            ctx.set_fonts(fonts);
+        }
         clock_window_frame(ctx, frame, self);
         if self.tikpop == true {
             self.time += 2.0;
@@ -227,8 +242,8 @@ fn clock_window_frame(
 
             // Paint the title:
             painter.text(
-                rect.center_top() + vec2(45.0, 50.0),
-                Align2::CENTER_CENTER,
+                rect.center_top() + vec2(-40.0, 53.0),
+                Align2::LEFT_CENTER,
                 now.format("%H:%M:%S"),
                 FontId::proportional(50.0),
                 text_color,
