@@ -1,5 +1,5 @@
 # Rust Clock
-Clock popup every half hour. Build with rust|egui|rodio|tray-icon
+Clock popup every half hour. Build with [rust](https://github.com/rust-lang/rust)|[egui](https://github.com/emilk/egui/)|[rodio](https://github.com/RustAudio/rodio)|[tray-icon](https://github.com/tauri-apps/tray-icon)
 
 ![example](pic.png)
 # Config
