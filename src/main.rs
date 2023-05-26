@@ -242,7 +242,7 @@ fn clock_window_frame(
 
             // Paint the title:
             painter.text(
-                rect.center_top() + vec2(-40.0, 53.0),
+                rect.center_top() + vec2(-41.0, 51.0),
                 Align2::LEFT_CENTER,
                 now.format("%H:%M:%S"),
                 FontId::proportional(50.0),
