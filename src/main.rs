@@ -16,7 +16,7 @@ use rodio::{Decoder, OutputStream, Sink};
 fn main() -> Result<(), eframe::Error> {
     let result = fs::read_to_string("conf.ini");
     if let Err(_) = result {
-       fs::write("conf.ini", "[Config]\ntime=:30:,:00:\n#sound=sound.ogg").unwrap()
+       fs::write("conf.ini", "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg").unwrap()
     }
 
     let i = Ini::load_from_file("conf.ini").unwrap();
@@ -36,8 +36,7 @@ fn main() -> Result<(), eframe::Error> {
         }
     }
 
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/icon.png");
-    let icon = load_icon(std::path::Path::new(path));
+    let icon = load_icon(std::path::Path::new("assets/icon.png"));
 
     let tray_menu = Menu::new();
     let quit_i = MenuItem::new("Quit", true, None);
