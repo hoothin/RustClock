@@ -22,3 +22,9 @@ time=:30:,15::0
 # play sound.ogg when popup
 sound=sound.ogg
 ```
++ countdown
+>The countdown time, set by `hour:minute:second`. Split multi-time by `,`.
+``` ini
+# 20-20-20 Rule
+countdown=:20:,::20
+```

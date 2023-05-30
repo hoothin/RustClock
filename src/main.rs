@@ -394,7 +394,7 @@ fn clock_window_frame(
             if app.tikpop == false {
                 let close_response = ui.put(
                     Rect::from_min_size(rect.left_top(), Vec2::splat(28.0)),
-                    Button::new(RichText::new("⭕").size(16.0)).frame(false),
+                    Button::new(RichText::new("•").size(26.0)).frame(false),
                 );
                 if close_response.clicked() {
                     frame.set_visible(false);
