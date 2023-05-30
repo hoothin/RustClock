@@ -9,7 +9,7 @@ Edit the conf.ini beside rust_clock.
 + time
 > The time when rust clock will popup, set by `hour:minute:second`. Split multi-time by `,`.
 ``` ini
-# popup every half hour
+# popup every half hour per clock
 time=:30:
 ```
 ``` ini
