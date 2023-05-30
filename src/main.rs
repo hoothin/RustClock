@@ -16,12 +16,13 @@ use rodio::{Decoder, OutputStream, Sink};
 fn main() -> Result<(), eframe::Error> {
     let result = fs::read_to_string("conf.ini");
     if let Err(_) = result {
-       fs::write("conf.ini", "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg").unwrap()
+       fs::write("conf.ini", "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20").unwrap()
     }
 
     let i = Ini::load_from_file("conf.ini").unwrap();
     let mut time_str = "".to_string();
     let mut sound_path = "".to_string();
+    let mut countdown = "".to_string();
     for (sec, prop) in i.iter() {
         if let Some(s) = sec {
             if s == "Config" {
@@ -30,6 +31,8 @@ fn main() -> Result<(), eframe::Error> {
                         time_str = v.to_string();
                     } else if k == "sound" {
                         sound_path = v.to_string();
+                    } else if k == "countdown" {
+                        countdown = v.to_string();
                     }
                 }
             }
@@ -40,6 +43,7 @@ fn main() -> Result<(), eframe::Error> {
 
     let tray_menu = Menu::new();
     let quit_i = MenuItem::new("Quit", true, None);
+    let countdown_i = MenuItem::new("Countdown", true, None);
     tray_menu.append_items(&[
         &PredefinedMenuItem::about(
             None,
@@ -49,6 +53,8 @@ fn main() -> Result<(), eframe::Error> {
                 ..Default::default()
             }),
         ),
+        &PredefinedMenuItem::separator(),
+        &countdown_i,
         &PredefinedMenuItem::separator(),
         &quit_i,
     ]);
@@ -76,10 +82,12 @@ fn main() -> Result<(), eframe::Error> {
         "Rust clock", // unused title
         options,
         Box::new(move |_cc| Box::new(MyApp{
-            quit: quit_i.id(),
+            quit_index: quit_i.id(),
             visible: true,
             time2show: time_str,
             sound_path: sound_path,
+            countdown: countdown,
+            countdown_index: countdown_i.id(),
             ..MyApp::default()
         })),
     )
@@ -87,7 +95,7 @@ fn main() -> Result<(), eframe::Error> {
 
 #[derive(Default)]
 struct MyApp {
-    quit: u32,
+    quit_index: u32,
     time: f32,
     time2show: String,
     tikpop: bool,
@@ -96,7 +104,11 @@ struct MyApp {
     last_pos_y: f32,
     last_visible: bool,
     sound_path: String,
-    inited: bool
+    countdown: String,
+    countdown_index: u32,
+    inited: bool,
+    countdown_start: bool,
+    countdown_start_time: i64
 }
 
 impl eframe::App for MyApp {
@@ -121,7 +133,89 @@ impl eframe::App for MyApp {
                 .insert(0, "my_font".to_owned());
             ctx.set_fonts(fonts);
         }
-        clock_window_frame(ctx, frame, self);
+        let mut begin_tik = || {
+            self.last_visible = self.visible;
+            if let Some(pos) = frame.get_window_pos() {
+                self.last_pos_x = pos.x;
+                self.last_pos_y = pos.y;
+            }
+            self.visible = true;
+            frame.set_visible(true);
+            self.time = 0.0;
+            frame.set_window_pos(Pos2::new(init_x, init_y));
+            if self.sound_path != "" {
+                let result = fs::File::open(&self.sound_path);
+                if let Ok(file) = result {
+                    let file = BufReader::new(file);
+                    std::thread::spawn(move || {
+                        let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+                        let source = Decoder::new(file).unwrap();
+                        let sink = Sink::try_new(&stream_handle).unwrap();
+                        sink.append(source);
+                        sink.sleep_until_end();
+                    });
+                }
+            }
+            ctx.request_repaint_after(std::time::Duration::from_millis(16));
+        };
+        let mut custom_clock = "".to_string();
+        if self.countdown_start == true {
+            let mut over_time = (Local::now().timestamp() - self.countdown_start_time) as i32;
+            if self.countdown == "" {
+                if over_time > 600 {
+                    self.countdown_start_time = Local::now().timestamp();
+                    if self.tikpop == false {
+                        begin_tik();
+                        self.tikpop = true;
+                    }
+                }
+                let left_time = 600.0 - over_time as f32;
+                let minute = (left_time / 60.0) as u32;
+                let second = (left_time % 60.0) as u32;
+                custom_clock = format!("00:{:02}:{:02}", minute, second);
+            } else {
+                let countdown_arr: Vec<&str> = self.countdown.split(',').collect();
+                let mut total_time:i32 = 0;
+                for x in &countdown_arr {
+                    let single_time: Vec<&str> = x.split(':').collect();
+                    let mut cur_time:i32 = 0;
+                    if single_time[0] != "" {
+                        cur_time = cur_time + single_time[0].to_string().parse::<i32>().unwrap() * 3600;
+                    }
+                    if single_time[1] != "" {
+                        cur_time = cur_time + single_time[1].to_string().parse::<i32>().unwrap() * 60;
+                    }
+                    if single_time[2] != "" {
+                        cur_time = cur_time + single_time[2].to_string().parse::<i32>().unwrap();
+                    }
+                    total_time = total_time + cur_time;
+                    if self.tikpop == false && over_time == total_time.into() {
+                        begin_tik();
+                        self.tikpop = true;
+                    } else if over_time < total_time {
+                        let left_time = (total_time - over_time) as f32;
+                        let hour = (left_time / 60.0 / 60.0) as u32;
+                        let minute = (left_time / 60.0) as u32;
+                        let second = (left_time % 60.0) as u32;
+                        custom_clock = format!("{:02}:{:02}:{:02}", hour, minute, second);
+                        break;
+                    }
+                }
+                if custom_clock == "" {
+                    over_time = 0;
+                    self.countdown_start_time = Local::now().timestamp();
+                    let left_time = (total_time - over_time) as f32;
+                    let hour = (left_time / 60.0 / 60.0) as u32;
+                    let minute = (left_time / 60.0) as u32;
+                    let second = (left_time % 60.0) as u32;
+                    custom_clock = format!("{:02}:{:02}:{:02}", hour, minute, second);
+                    if self.tikpop == false {
+                        begin_tik();
+                        self.tikpop = true;
+                    }
+                }
+            }
+        }
         if self.tikpop == true {
             self.time += 2.0;
             frame.set_mouse_passthrough(false);
@@ -153,38 +247,19 @@ impl eframe::App for MyApp {
                 let time2show_arr: Vec<&str> = self.time2show.split(',').collect();
                 for x in &time2show_arr {
                     let single_time: Vec<&str> = x.split(':').collect();
-                    if (single_time[0] == "" || single_time[0] == hour) &&
-                    (single_time[1] == "" || single_time[1] == minute) &&
-                    ((single_time[2] == "" && second == "0") || single_time[2] == second) {
-                        self.last_visible = self.visible;
-                        if let Some(pos) = frame.get_window_pos() {
-                            self.last_pos_x = pos.x;
-                            self.last_pos_y = pos.y;
+                    if (single_time[0] == "" || single_time[0] == hour || single_time[0] == "0".to_string() + &hour) &&
+                    (single_time[1] == "" || single_time[1] == minute || single_time[1] == "0".to_string() + &minute) &&
+                    ((single_time[2] == "" && (second == "0" || second == "00")) || single_time[2] == second) {
+                        if self.tikpop == false {
+                            begin_tik();
+                            self.tikpop = true;
                         }
-                        self.visible = true;
-                        self.tikpop = true;
-                        frame.set_visible(true);
-                        self.time = 0.0;
-                        frame.set_window_pos(Pos2::new(init_x, init_y));
-                        if self.sound_path != "" {
-                            let result = fs::File::open(&self.sound_path);
-                            if let Ok(file) = result {
-                                let file = BufReader::new(file);
-                                std::thread::spawn(move || {
-                                    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-                                    let source = Decoder::new(file).unwrap();
-                                    let sink = Sink::try_new(&stream_handle).unwrap();
-                                    sink.append(source);
-                                    sink.sleep_until_end();
-                                });
-                            }
-                        }
-                        ctx.request_repaint_after(std::time::Duration::from_millis(16));
                         break;
                     }
                 }
             }
         }
+        clock_window_frame(ctx, frame, self, custom_clock);
 
         if let Ok(TrayEvent {
             event: tray_icon::ClickEvent::Left,
@@ -201,8 +276,15 @@ impl eframe::App for MyApp {
             }
         }
         if let Ok(event) = MenuEvent::receiver().try_recv() {
-            if event.id == self.quit {
+            if event.id == self.quit_index {
                 std::process::exit(0)
+            } else if event.id == self.countdown_index {
+                self.countdown_start = !self.countdown_start;
+                if self.countdown_start == true {
+                    self.visible = true;
+                    frame.set_visible(self.visible);
+                    self.countdown_start_time = Local::now().timestamp();
+                }
             }
         }
     }
@@ -211,7 +293,8 @@ impl eframe::App for MyApp {
 fn clock_window_frame(
     ctx: &egui::Context,
     frame: &mut eframe::Frame,
-    app: &mut MyApp
+    app: &mut MyApp,
+    custom_clock: String
 ) {
     use egui::*;
     let text_color = ctx.style().visuals.text_color();
@@ -240,13 +323,23 @@ fn clock_window_frame(
             );
 
             // Paint the title:
-            painter.text(
-                rect.center_top() + vec2(-41.0, 51.0),
-                Align2::LEFT_CENTER,
-                now.format("%H:%M:%S"),
-                FontId::proportional(50.0),
-                text_color,
-            );
+            if custom_clock == "" {
+                painter.text(
+                    rect.center_top() + vec2(-41.0, 51.0),
+                    Align2::LEFT_CENTER,
+                    now.format("%H:%M:%S"),
+                    FontId::proportional(50.0),
+                    text_color,
+                );
+            } else {
+                painter.text(
+                    rect.center_top() + vec2(-41.0, 51.0),
+                    Align2::LEFT_CENTER,
+                    custom_clock,
+                    FontId::proportional(50.0),
+                    text_color,
+                );
+            }
 
             painter.circle_filled(
                 Pos2::new(55.0, 50.0),
@@ -294,7 +387,7 @@ fn clock_window_frame(
             if app.tikpop == false {
                 let close_response = ui.put(
                     Rect::from_min_size(rect.left_top(), Vec2::splat(28.0)),
-                    Button::new(RichText::new("❌").size(24.0)).frame(false),
+                    Button::new(RichText::new("⭕").size(16.0)).frame(false),
                 );
                 if close_response.clicked() {
                     frame.set_visible(false);
