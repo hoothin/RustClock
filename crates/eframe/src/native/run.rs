@@ -545,9 +545,6 @@ mod glow_integration {
             integration.egui_ctx.set_visuals(theme.egui_visuals());
 
             gl_window.window().set_ime_allowed(true);
-            if self.native_options.mouse_passthrough {
-                gl_window.window().set_cursor_hittest(false).unwrap();
-            }
 
             {
                 let event_loop_proxy = self.repaint_proxy.clone();
@@ -662,6 +659,7 @@ mod glow_integration {
                 }
 
                 integration.post_present(window);
+                window.set_cursor_hittest(!self.native_options.mouse_passthrough).unwrap();
 
                 #[cfg(feature = "__screenshot")]
                 // give it time to settle:

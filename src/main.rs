@@ -135,12 +135,14 @@ impl eframe::App for MyApp {
         }
         let mut begin_tik = || {
             self.last_visible = self.visible;
-            if let Some(pos) = frame.get_window_pos() {
-                self.last_pos_x = pos.x;
-                self.last_pos_y = pos.y;
+            if self.last_visible == true {
+                if let Some(pos) = frame.get_window_pos() {
+                    self.last_pos_x = pos.x;
+                    self.last_pos_y = pos.y;
+                }
             }
             self.visible = true;
-            frame.set_visible(true);
+            frame.set_visible(self.visible);
             self.time = 0.0;
             frame.set_window_pos(Pos2::new(init_x, init_y));
             if self.sound_path != "" {
@@ -156,7 +158,7 @@ impl eframe::App for MyApp {
                     });
                 }
             }
-            ctx.request_repaint_after(std::time::Duration::from_millis(16));
+            ctx.request_repaint();
         };
         let mut custom_clock = "".to_string();
         if self.countdown_start == true {
@@ -273,6 +275,11 @@ impl eframe::App for MyApp {
             if self.visible == true {
                 frame.set_window_pos(Pos2::new(0.0, init_y));
                 frame.set_mouse_passthrough(true);
+            } else {
+                if let Some(pos) = frame.get_window_pos() {
+                    self.last_pos_x = pos.x;
+                    self.last_pos_y = pos.y;
+                }
             }
         }
         if let Ok(event) = MenuEvent::receiver().try_recv() {
