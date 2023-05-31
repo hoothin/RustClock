@@ -108,7 +108,8 @@ struct MyApp {
     countdown_index: u32,
     inited: bool,
     countdown_start: bool,
-    countdown_start_time: i64
+    countdown_start_time: i64,
+    in_time_popup: bool
 }
 
 impl eframe::App for MyApp {
@@ -161,7 +162,7 @@ impl eframe::App for MyApp {
             ctx.request_repaint();
         };
         let mut custom_clock = "".to_string();
-        if self.countdown_start == true {
+        if self.countdown_start == true && self.in_time_popup == false {
             let mut over_time = (Local::now().timestamp() - self.countdown_start_time) as i32;
             if self.countdown == "" {
                 if over_time > 600 {
@@ -229,6 +230,7 @@ impl eframe::App for MyApp {
                 frame.set_window_pos(Pos2::new(add_x, init_y));
             } else if self.time > 350.0 {
                 self.tikpop = false;
+                self.in_time_popup = false;
                 self.visible = self.last_visible;
                 frame.set_visible(self.visible);
                 if self.visible == true {
@@ -241,6 +243,7 @@ impl eframe::App for MyApp {
             }
             ctx.request_repaint_after(std::time::Duration::from_millis(16));
         } else {
+            self.in_time_popup = false;
             let now: DateTime<Local> = Local::now();
             let hour = now.hour().to_string();
             let minute = now.minute().to_string();
@@ -254,6 +257,7 @@ impl eframe::App for MyApp {
                     ((single_time[2] == "" && (second == "0" || second == "00")) || single_time[2] == second) {
                         if self.tikpop == false {
                             begin_tik();
+                            self.in_time_popup = true;
                             self.tikpop = true;
                         }
                         break;
