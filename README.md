@@ -38,7 +38,7 @@ sound=assets/1.mp3|assets/2.mp3
 ```
 ``` ini
 # Increase the countdown sound effect on the above basis, play assets/3.mp3 when reaches first countdown you set，play assets/4.mp3 when reaches second countdown you set.
-# 在上面的基礎上增加倒計時音效，第一個倒計時播放 assets/3.mp3，第二個倒計時播放 assets/4.mp3
+# 在上面的基礎上區分倒計時音效，第一個倒計時播放 assets/3.mp3，第二個倒計時播放 assets/4.mp3
 sound=assets/1.mp3|assets/2.mp3*assets/3.mp3|assets/4.mp3
 ```
 + countdown
