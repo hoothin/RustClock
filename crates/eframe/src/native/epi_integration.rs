@@ -1,4 +1,6 @@
 use winit::event_loop::EventLoopWindowTarget;
+
+#[cfg(target_os = "windows")]
 use winit::platform::windows::WindowBuilderExtWindows;
 
 #[cfg(target_os = "macos")]
@@ -84,12 +86,16 @@ pub fn build_window<E>(
         .with_fullscreen(fullscreen.then(|| winit::window::Fullscreen::Borderless(None)))
         .with_maximized(*maximized)
         .with_resizable(*resizable)
-        .with_skip_taskbar(true)
         .with_transparent(*transparent)
         .with_window_icon(window_icon)
         // Keep hidden until we've painted something. See https://github.com/emilk/egui/pull/2279
         // We must also keep the window hidden until AccessKit is initialized.
         .with_visible(false);
+
+    #[cfg(target_os = "windows")]
+    {
+        window_builder = window_builder.with_skip_taskbar(true);
+    }
 
     #[cfg(target_os = "macos")]
     if *fullsize_content {

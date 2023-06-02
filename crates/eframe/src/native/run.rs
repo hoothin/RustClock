@@ -7,6 +7,9 @@ use winit::event_loop::{
     ControlFlow, EventLoop, EventLoopBuilder, EventLoopProxy, EventLoopWindowTarget,
 };
 
+#[cfg(target_os = "macos")]
+use winit::platform::macos::EventLoopBuilderExtMacOS;
+
 #[cfg(feature = "accesskit")]
 use egui_winit::accesskit_winit;
 use egui_winit::winit;
@@ -75,6 +78,10 @@ fn create_event_loop_builder(
         hook(&mut event_loop_builder);
     }
 
+    #[cfg(target_os = "macos")]
+    {
+        event_loop_builder.with_activation_policy(winit::platform::macos::ActivationPolicy::Accessory);
+    }
     event_loop_builder
 }
 

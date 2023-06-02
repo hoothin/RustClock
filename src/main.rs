@@ -6,6 +6,8 @@ use tray_icon::{
     menu::{AboutMetadata, Menu, MenuEvent, MenuItem, PredefinedMenuItem},
     TrayEvent, TrayIconBuilder,
 };
+#[cfg(not(target_os = "linux"))]
+use std::{cell::RefCell, rc::Rc};
 
 use chrono::{DateTime, Timelike, Local};
 use ini::Ini;
@@ -14,15 +16,22 @@ use std::io::BufReader;
 use rodio::{Decoder, OutputStream, Sink};
 
 fn main() -> Result<(), eframe::Error> {
-    let result = fs::read_to_string("conf.ini");
+    let mut dir = std::env::current_exe().unwrap();
+    dir.pop();
+    dir.push("conf.ini");
+    let ini_path = dir.as_path();
+    let result = fs::read_to_string(ini_path);
     if let Err(_) = result {
-       fs::write("conf.ini", "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20").unwrap()
+       fs::write(ini_path, "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%").unwrap()
     }
 
-    let i = Ini::load_from_file("conf.ini").unwrap();
+    let i = Ini::load_from_file(ini_path).unwrap();
+    dir.pop();
+    let mut sound_path = String::from(dir.as_path().to_string_lossy()) + &"/*";
     let mut time_str = "".to_string();
-    let mut sound_path = "".to_string();
     let mut countdown = "".to_string();
+    let mut pos_dir = "left".to_string();
+    let mut pos_pc = 0;
     for (sec, prop) in i.iter() {
         if let Some(s) = sec {
             if s == "Config" {
@@ -30,16 +39,25 @@ fn main() -> Result<(), eframe::Error> {
                     if k == "time" {
                         time_str = v.to_string();
                     } else if k == "sound" {
-                        sound_path = v.to_string();
+                        sound_path = sound_path + &v.to_string();
                     } else if k == "countdown" {
                         countdown = v.to_string();
+                    } else if k == "pos" {
+                        let v_str = v.to_string();
+                        let pos_arr: Vec<&str> = v_str.split(',').collect();
+                        pos_dir = pos_arr[0].to_string();
+                        if pos_arr.len() == 2 {
+                            pos_pc = pos_arr[1].replace("%", "").to_string().parse::<i32>().unwrap();
+                        }
                     }
                 }
             }
         }
     }
 
-    let icon = load_icon(std::path::Path::new("assets/icon.png"));
+    dir.push("assets");
+    dir.push("icon.png");
+    let icon = load_icon(dir.as_path());
 
     let tray_menu = Menu::new();
     let quit_i = MenuItem::new("Quit", true, None);
@@ -59,14 +77,10 @@ fn main() -> Result<(), eframe::Error> {
         &quit_i,
     ]);
 
-    let _tray_icon = Some(
-        TrayIconBuilder::new()
-            .with_menu(Box::new(tray_menu))
-            .with_tooltip("Rust clock")
-            .with_icon(icon)
-            .build()
-            .unwrap(),
-    );
+    #[cfg(not(target_os = "linux"))]
+    let mut _tray_icon = Rc::new(RefCell::new(None));
+    #[cfg(not(target_os = "linux"))]
+    let tray_c = _tray_icon.clone();
 
     let options = eframe::NativeOptions {
         decorated: false,
@@ -81,15 +95,30 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Rust clock", // unused title
         options,
-        Box::new(move |_cc| Box::new(MyApp{
-            quit_index: quit_i.id(),
-            visible: true,
-            time2show: time_str,
-            sound_path: sound_path,
-            countdown: countdown,
-            countdown_index: countdown_i.id(),
-            ..MyApp::default()
-        })),
+        Box::new(move |_cc| {
+            #[cfg(not(target_os = "linux"))]
+            {
+                tray_c
+                    .borrow_mut()
+                    .replace(TrayIconBuilder::new()
+                    .with_menu(Box::new(tray_menu))
+                    .with_tooltip("Rust clock")
+                    .with_icon(icon)
+                    .build()
+                    .unwrap());
+            }
+            Box::new(MyApp{
+                quit_index: quit_i.id(),
+                visible: true,
+                time2show: time_str,
+                sound_path: sound_path,
+                countdown: countdown,
+                countdown_index: countdown_i.id(),
+                pos_dir: pos_dir,
+                pos_pc: pos_pc,
+                ..MyApp::default()
+            })
+        }),
     )
 }
 
@@ -109,7 +138,11 @@ struct MyApp {
     inited: bool,
     countdown_start: bool,
     countdown_start_time: i64,
-    in_time_popup: bool
+    in_time_popup: bool,
+    pos_pc: i32,
+    pos_dir: String,
+    init_x: f32,
+    init_y: f32
 }
 
 impl eframe::App for MyApp {
@@ -118,8 +151,6 @@ impl eframe::App for MyApp {
     }
 
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        let init_x = -310.0;
-        let init_y = 50.0;
         if self.inited == false {
             self.inited = true;
             let mut fonts = egui::FontDefinitions::default();
@@ -133,8 +164,21 @@ impl eframe::App for MyApp {
                 .or_default()
                 .insert(0, "my_font".to_owned());
             ctx.set_fonts(fonts);
+            self.init_y = 50.0;
+            self.init_x = -320.0;
+            if self.pos_pc != 0 {
+                if let Some(egui::Vec2 { x: _, y }) = frame.info().window_info.monitor_size {
+                    let pos = self.pos_pc as f32 / 100.0 * y;
+                    self.init_y = pos;
+                }
+            }
+            if self.pos_dir == "right" {
+                if let Some(egui::Vec2 { x, y: _ }) = frame.info().window_info.monitor_size {
+                    self.init_x = x as f32;
+                }
+            }
         }
-        let mut begin_tik = || {
+        let mut begin_tik = |index, in_time_popup| {
             self.last_visible = self.visible;
             if self.last_visible == true {
                 if let Some(pos) = frame.get_window_pos() {
@@ -145,30 +189,49 @@ impl eframe::App for MyApp {
             self.visible = true;
             frame.set_visible(self.visible);
             self.time = 0.0;
-            frame.set_window_pos(Pos2::new(init_x, init_y));
+            frame.set_window_pos(Pos2::new(self.init_x, self.init_y));
             if self.sound_path != "" {
-                let result = fs::File::open(&self.sound_path);
-                if let Ok(file) = result {
-                    let file = BufReader::new(file);
-                    std::thread::spawn(move || {
-                        let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-                        let source = Decoder::new(file).unwrap();
-                        let sink = Sink::try_new(&stream_handle).unwrap();
-                        sink.append(source);
-                        sink.sleep_until_end();
-                    });
+                let mut path = "".to_string();
+                let sound_path_arr: Vec<&str> = self.sound_path.split('*').collect();
+                let normal_sound:Vec<&str> = sound_path_arr[1].split('|').collect();
+                if sound_path_arr.len() == 2 || in_time_popup == true {
+                    if normal_sound.len() > index {
+                        path = sound_path_arr[0].to_owned() + &normal_sound[index];
+                    } else {
+                        path = sound_path_arr[0].to_owned() + &normal_sound[0];
+                    }
+                } else if sound_path_arr.len() == 3 {
+                    let countdown_sound:Vec<&str> = sound_path_arr[2].split('|').collect();
+                    if countdown_sound.len() > index {
+                        path = sound_path_arr[0].to_owned() + &countdown_sound[index];
+                    } else {
+                        path = sound_path_arr[0].to_owned() + &countdown_sound[0];
+                    }
+                }
+                if path != "" {
+                    let result = fs::File::open(&path);
+                    if let Ok(file) = result {
+                        let file = BufReader::new(file);
+                        std::thread::spawn(move || {
+                            let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+                            let source = Decoder::new(file).unwrap();
+                            let sink = Sink::try_new(&stream_handle).unwrap();
+                            sink.append(source);
+                            sink.sleep_until_end();
+                        });
+                    }
                 }
             }
             ctx.request_repaint();
         };
         let mut custom_clock = "".to_string();
         if self.countdown_start == true && self.in_time_popup == false {
-            let mut over_time = (Local::now().timestamp() - self.countdown_start_time) as i32;
+            let over_time = (Local::now().timestamp() - self.countdown_start_time) as i32;
             if self.countdown == "" {
                 if over_time > 600 {
                     self.countdown_start_time = Local::now().timestamp();
                     if self.tikpop == false {
-                        begin_tik();
+                        begin_tik(0, self.in_time_popup);
                         self.tikpop = true;
                     }
                 }
@@ -179,6 +242,8 @@ impl eframe::App for MyApp {
             } else {
                 let countdown_arr: Vec<&str> = self.countdown.split(',').collect();
                 let mut total_time:i32 = 0;
+                let mut first_time:i32 = 0;
+                let mut index:i32 = 0;
                 for x in &countdown_arr {
                     let single_time: Vec<&str> = x.split(':').collect();
                     let mut cur_time:i32 = 0;
@@ -191,9 +256,12 @@ impl eframe::App for MyApp {
                     if single_time[2] != "" {
                         cur_time = cur_time + single_time[2].to_string().parse::<i32>().unwrap();
                     }
+                    if first_time == 0 {
+                        first_time = cur_time;
+                    }
                     total_time = total_time + cur_time;
                     if self.tikpop == false && over_time == total_time.into() {
-                        begin_tik();
+                        begin_tik(index.try_into().unwrap(), self.in_time_popup);
                         self.tikpop = true;
                     } else if over_time < total_time {
                         let left_time = (total_time - over_time) as f32;
@@ -203,17 +271,17 @@ impl eframe::App for MyApp {
                         custom_clock = format!("{:02}:{:02}:{:02}", hour, minute, second);
                         break;
                     }
+                    index = index + 1;
                 }
                 if custom_clock == "" {
-                    over_time = 0;
                     self.countdown_start_time = Local::now().timestamp();
-                    let left_time = (total_time - over_time) as f32;
+                    let left_time = first_time as f32;
                     let hour = (left_time / 60.0 / 60.0) as u32;
                     let minute = (left_time / 60.0) as u32;
                     let second = (left_time % 60.0) as u32;
                     custom_clock = format!("{:02}:{:02}:{:02}", hour, minute, second);
                     if self.tikpop == false {
-                        begin_tik();
+                        begin_tik(0, self.in_time_popup);
                         self.tikpop = true;
                     }
                 }
@@ -223,11 +291,19 @@ impl eframe::App for MyApp {
             self.time += 2.0;
             frame.set_mouse_passthrough(false);
             if self.time < 100.0 {
-                let add_x = (self.time / 200.0 * std::f32::consts::PI).sin() * -init_x;
-                frame.set_window_pos(Pos2::new(init_x + add_x, init_y));
+                let mut add_x = (self.time / 200.0 * std::f32::consts::PI).sin() * 320.0;
+                if self.pos_dir == "right" {
+                    add_x = -add_x;
+                }
+                frame.set_window_pos(Pos2::new(self.init_x + add_x, self.init_y));
             } else if self.time > 250.0 && self.time < 350.0 {
-                let add_x = ((self.time - 250.0) / 200.0 * std::f32::consts::PI).sin() * (init_x - 10.0);
-                frame.set_window_pos(Pos2::new(add_x, init_y));
+                let mut add_x = ((self.time - 250.0) / 200.0 * std::f32::consts::PI).sin() * 320.0;
+                if self.pos_dir != "right" {
+                    add_x = -add_x;
+                } else {
+                    add_x = self.init_x + add_x - 320.0;
+                }
+                frame.set_window_pos(Pos2::new(add_x, self.init_y));
             } else if self.time > 350.0 {
                 self.tikpop = false;
                 self.in_time_popup = false;
@@ -250,18 +326,20 @@ impl eframe::App for MyApp {
             let second = now.second().to_string();
             if self.time2show != "" {
                 let time2show_arr: Vec<&str> = self.time2show.split(',').collect();
+                let mut index:i32 = 0;
                 for x in &time2show_arr {
                     let single_time: Vec<&str> = x.split(':').collect();
                     if (single_time[0] == "" || single_time[0] == hour || single_time[0] == "0".to_string() + &hour) &&
                     (single_time[1] == "" || single_time[1] == minute || single_time[1] == "0".to_string() + &minute) &&
                     ((single_time[2] == "" && (second == "0" || second == "00")) || single_time[2] == second) {
                         if self.tikpop == false {
-                            begin_tik();
                             self.in_time_popup = true;
+                            begin_tik(index.try_into().unwrap(), self.in_time_popup);
                             self.tikpop = true;
                         }
                         break;
                     }
+                    index = index + 1;
                 }
             }
         }
@@ -277,7 +355,7 @@ impl eframe::App for MyApp {
             self.tikpop = false;
             self.time = 0.0;
             if self.visible == true {
-                frame.set_window_pos(Pos2::new(0.0, init_y));
+                frame.set_window_pos(Pos2::new(0.0, self.init_y));
                 frame.set_mouse_passthrough(true);
             } else {
                 if let Some(pos) = frame.get_window_pos() {
@@ -406,7 +484,7 @@ fn clock_window_frame(
                 }
             }
         });
-    ctx.request_repaint_after(std::time::Duration::from_millis(100));
+    ctx.request_repaint_after(std::time::Duration::from_millis(300));
 }
 
 fn load_icon(path: &std::path::Path) -> tray_icon::icon::Icon {
