@@ -331,7 +331,7 @@ impl eframe::App for MyApp {
                     let single_time: Vec<&str> = x.split(':').collect();
                     if (single_time[0] == "" || single_time[0] == hour || single_time[0] == "0".to_string() + &hour) &&
                     (single_time[1] == "" || single_time[1] == minute || single_time[1] == "0".to_string() + &minute) &&
-                    ((single_time[2] == "" && (second == "0" || second == "00")) || single_time[2] == second) {
+                    ((single_time[2] == "" && second == "0") || single_time[2] == second || single_time[2] == "0".to_string() + &second) {
                         if self.tikpop == false {
                             self.in_time_popup = true;
                             begin_tik(index.try_into().unwrap(), self.in_time_popup);
