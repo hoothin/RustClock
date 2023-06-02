@@ -46,7 +46,7 @@ sound=assets/1.mp3|assets/2.mp3*assets/3.mp3|assets/4.mp3
 >
 > 倒計時，使用 `時:分:秒` 的格式，多個倒計時使用 `,` 分隔。
 ``` ini
-# 20-20-20 Rule
+# 20-20-20 Rule 護眼法則
 countdown=:20:,::20
 ```
 + pos
