@@ -18,7 +18,7 @@ Edit the conf.ini beside rust_clock.
 time=:30:
 ```
 ``` ini
-# popup every half hour and every begining of minute in 15 o'clock
+# popup every half hour and every beginning of minute in 15 o'clock
 # 每個鐘頭的 30 分鐘與 15 點整彈出
 time=:30:,15::0
 ```
