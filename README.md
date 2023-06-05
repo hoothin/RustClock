@@ -18,7 +18,7 @@ Edit the conf.ini beside rust_clock.
 time=:30:
 ```
 ``` ini
-# popup every half hour and every begining of minute in 15 o'clock
+# popup every half hour and every beginning of minute in 15 o'clock
 # 每個鐘頭的 30 分鐘與 15 點整彈出
 time=:30:,15::0
 ```
@@ -57,4 +57,29 @@ countdown=:20:,::20
 # popup from right side of screen, 20% top of screen height.
 # 在屏幕右側彈出，彈出位置距離屏幕頂部 20% 高度
 pos=right,20%
+```
++ color
+> The color of rust clock. Format by r,g,b or r,g,b,a
+>
+> rust clock 各個位置的顔色。格式為 r,g,b 或者 r,g,b,a
+``` ini
+# Color of background.
+# 背景顏色
+bg_color=207,210,206,200
+
+# Color of border.
+# 邊框顏色
+border_color=91,105,114
+
+# Color of number background.
+# 數字背景顏色
+number_bg_color=235,235,235
+
+# Color of number.
+# 數字顏色
+number_color=0,0,0
+
+# Color of clock circle background.
+# 鐘面背景顏色
+clock_bg_color=235,235,235
 ```
