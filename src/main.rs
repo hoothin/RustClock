@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
+use crate::egui::Color32;
 use crate::egui::Pos2;
 use eframe::egui;
 use tray_icon::{
@@ -32,6 +33,11 @@ fn main() -> Result<(), eframe::Error> {
     let mut countdown = "".to_string();
     let mut pos_dir = "left".to_string();
     let mut pos_pc = 0;
+    let mut custom_bg_color = "".to_string();
+    let mut custom_border_color = "".to_string();
+    let mut custom_number_bg_color = "".to_string();
+    let mut custom_number_color = "".to_string();
+    let mut custom_clock_bg_color = "".to_string();
     for (sec, prop) in i.iter() {
         if let Some(s) = sec {
             if s == "Config" {
@@ -49,6 +55,16 @@ fn main() -> Result<(), eframe::Error> {
                         if pos_arr.len() == 2 {
                             pos_pc = pos_arr[1].replace("%", "").to_string().parse::<i32>().unwrap();
                         }
+                    } else if k == "bg_color" {
+                        custom_bg_color = v.to_string();
+                    } else if k == "border_color" {
+                        custom_border_color = v.to_string();
+                    } else if k == "number_bg_color" {
+                        custom_number_bg_color = v.to_string();
+                    } else if k == "number_color" {
+                        custom_number_color = v.to_string();
+                    } else if k == "clock_bg_color" {
+                        custom_clock_bg_color = v.to_string();
                     }
                 }
             }
@@ -90,6 +106,7 @@ fn main() -> Result<(), eframe::Error> {
         min_window_size: Some(egui::vec2(320.0, 100.0)),
         initial_window_size: Some(egui::vec2(320.0, 100.0)),
         default_theme: eframe::Theme::Dark,
+        multisampling: 2,
         ..Default::default()
     };
     eframe::run_native(
@@ -116,6 +133,11 @@ fn main() -> Result<(), eframe::Error> {
                 countdown_index: countdown_i.id(),
                 pos_dir: pos_dir,
                 pos_pc: pos_pc,
+                custom_bg_color: custom_bg_color,
+                custom_border_color: custom_border_color,
+                custom_number_bg_color: custom_number_bg_color,
+                custom_number_color: custom_number_color,
+                custom_clock_bg_color: custom_clock_bg_color,
                 ..MyApp::default()
             })
         }),
@@ -142,7 +164,12 @@ struct MyApp {
     pos_pc: i32,
     pos_dir: String,
     init_x: f32,
-    init_y: f32
+    init_y: f32,
+    custom_bg_color: String,
+    custom_border_color: String,
+    custom_number_bg_color: String,
+    custom_number_color: String,
+    custom_clock_bg_color: String
 }
 
 impl eframe::App for MyApp {
@@ -343,6 +370,7 @@ impl eframe::App for MyApp {
                 }
             }
         }
+
         clock_window_frame(ctx, frame, self, custom_clock);
 
         if let Ok(TrayEvent {
@@ -379,6 +407,25 @@ impl eframe::App for MyApp {
     }
 }
 
+fn gene_color(color_str: String, default_color: Color32) -> Color32 {
+    if color_str == "" {
+        return default_color
+    }
+    let color_arr: Vec<&str> = color_str.split(',').collect();
+    if color_arr.len() < 3 {
+        return Color32::from_rgb(0, 0, 0)
+    }
+    if color_arr.len() == 3 {
+        return Color32::from_rgb(color_arr[0].to_string().parse::<u8>().unwrap(), 
+            color_arr[1].to_string().parse::<u8>().unwrap(), 
+            color_arr[2].to_string().parse::<u8>().unwrap())
+    }
+    return Color32::from_rgba_unmultiplied(color_arr[0].to_string().parse::<u8>().unwrap(), 
+        color_arr[1].to_string().parse::<u8>().unwrap(), 
+        color_arr[2].to_string().parse::<u8>().unwrap(),  
+        color_arr[3].to_string().parse::<u8>().unwrap())
+}
+
 fn clock_window_frame(
     ctx: &egui::Context,
     frame: &mut eframe::Frame,
@@ -398,8 +445,8 @@ fn clock_window_frame(
             painter.rect(
                 rect.shrink(1.0),
                 10.0,
-                Color32::from_rgba_premultiplied(32, 33, 36, 200),
-                Stroke::new(1.0, text_color),
+                gene_color(app.custom_bg_color.to_owned(), Color32::from_rgba_premultiplied(32, 33, 36, 200)),
+                Stroke::new(1.0, gene_color(app.custom_border_color.to_owned(), text_color)),
             );
 
             painter.rect_filled(
@@ -408,7 +455,7 @@ fn clock_window_frame(
                     Pos2::new(305.0, 75.0)
                 ]),
                 5.0,
-                Color32::from_rgb(0, 0, 0),
+                gene_color(app.custom_number_bg_color.to_owned(), Color32::from_rgb(0, 0, 0)),
             );
 
             // Paint the title:
@@ -418,7 +465,7 @@ fn clock_window_frame(
                     Align2::LEFT_CENTER,
                     now.format("%H:%M:%S"),
                     FontId::proportional(50.0),
-                    text_color,
+                    gene_color(app.custom_number_color.to_owned(), text_color),
                 );
             } else {
                 painter.text(
@@ -426,14 +473,14 @@ fn clock_window_frame(
                     Align2::LEFT_CENTER,
                     custom_clock,
                     FontId::proportional(50.0),
-                    text_color,
+                    gene_color(app.custom_number_color.to_owned(), text_color),
                 );
             }
 
             painter.circle_filled(
                 Pos2::new(55.0, 50.0),
                 40.0,
-                text_color
+                gene_color(app.custom_clock_bg_color.to_owned(), text_color)
             );
 
             let (_, hour) = now.hour12();

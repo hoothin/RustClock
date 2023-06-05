@@ -3943,7 +3943,7 @@ dependencies = [
 
 [[package]]
 name = "rust_clock"
-version = "0.1.2"
+version = "0.1.4"
 dependencies = [
  "chrono",
  "eframe",
