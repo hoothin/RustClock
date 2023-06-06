@@ -5,6 +5,13 @@ Clock popup every half hour. Build with [rust](https://github.com/rust-lang/rust
 > 每隔半小時彈出一次的桌面時鐘
 
 ![example](pic.gif)
+# Install
++ [Release](https://github.com/hoothin/RustClock/releases/)
++ Homebrew
+``` bash
+brew install hoothin/rust_clock/rust_clock
+```
+
 # Config
 Edit the conf.ini beside rust_clock.
 > 編輯可執行文件旁的 conf.ini。
