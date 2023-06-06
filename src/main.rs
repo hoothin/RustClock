@@ -38,6 +38,8 @@ fn main() -> Result<(), eframe::Error> {
     let mut custom_number_bg_color = "".to_string();
     let mut custom_number_color = "".to_string();
     let mut custom_clock_bg_color = "".to_string();
+    let mut tips_store = "".to_string();
+    let mut font_path = "".to_string();
     for (sec, prop) in i.iter() {
         if let Some(s) = sec {
             if s == "Config" {
@@ -65,6 +67,10 @@ fn main() -> Result<(), eframe::Error> {
                         custom_number_color = v.to_string();
                     } else if k == "clock_bg_color" {
                         custom_clock_bg_color = v.to_string();
+                    } else if k == "tips" {
+                        tips_store = v.to_string();
+                    } else if k == "font_path" {
+                        font_path = v.to_string();
                     }
                 }
             }
@@ -138,6 +144,8 @@ fn main() -> Result<(), eframe::Error> {
                 custom_number_bg_color: custom_number_bg_color,
                 custom_number_color: custom_number_color,
                 custom_clock_bg_color: custom_clock_bg_color,
+                tips_store: tips_store,
+                font_path: font_path,
                 ..MyApp::default()
             })
         }),
@@ -169,7 +177,10 @@ struct MyApp {
     custom_border_color: String,
     custom_number_bg_color: String,
     custom_number_color: String,
-    custom_clock_bg_color: String
+    custom_clock_bg_color: String,
+    tips_store: String,
+    show_tips: String,
+    font_path: String
 }
 
 impl eframe::App for MyApp {
@@ -181,6 +192,28 @@ impl eframe::App for MyApp {
         if self.inited == false {
             self.inited = true;
             let mut fonts = egui::FontDefinitions::default();
+            if self.font_path == "" {
+                #[cfg(target_os = "windows")]
+                {
+                    self.font_path = "C:/Windows/Fonts/msyh.ttc".to_string();
+                }
+                #[cfg(target_os = "macos")]
+                {
+                    self.font_path = "/System/Library/Fonts/STHeiti Light.ttc".to_string();
+                }
+            }
+            let result = std::fs::read(&self.font_path);
+            if let Ok(font) = result {
+                fonts.font_data.insert(
+                    "other_font".to_owned(),
+                    egui::FontData::from_owned(font)
+                );
+                fonts
+                    .families
+                    .entry(egui::FontFamily::Proportional)
+                    .or_default()
+                    .insert(0, "other_font".to_owned());
+            }
             fonts.font_data.insert(
                 "my_font".to_owned(),
                 egui::FontData::from_static(include_bytes!("../assets/font.ttf")),
@@ -205,6 +238,7 @@ impl eframe::App for MyApp {
                 }
             }
         }
+        
         let mut begin_tik = |index, in_time_popup| {
             self.last_visible = self.visible;
             if self.last_visible == true {
@@ -247,6 +281,28 @@ impl eframe::App for MyApp {
                             sink.sleep_until_end();
                         });
                     }
+                }
+            }
+            if self.tips_store != "" {
+                let mut tips = "".to_string();
+                let tips_arr: Vec<&str> = self.tips_store.split('*').collect();
+                let normal_tips:Vec<&str> = tips_arr[0].split('|').collect();
+                if tips_arr.len() == 1 || in_time_popup == true {
+                    if normal_tips.len() > index {
+                        tips = normal_tips[index].to_string();
+                    } else {
+                        tips = normal_tips[0].to_string();
+                    }
+                } else if tips_arr.len() == 2 {
+                    let countdown_tips:Vec<&str> = tips_arr[1].split('|').collect();
+                    if countdown_tips.len() > index {
+                        tips = countdown_tips[index].to_string();
+                    } else {
+                        tips = countdown_tips[0].to_string();
+                    }
+                }
+                if tips != "" {
+                    self.show_tips = tips;
                 }
             }
             ctx.request_repaint();
@@ -333,6 +389,7 @@ impl eframe::App for MyApp {
                 frame.set_window_pos(Pos2::new(add_x, self.init_y));
             } else if self.time > 350.0 {
                 self.tikpop = false;
+                self.show_tips = "".to_string();
                 self.in_time_popup = false;
                 self.visible = self.last_visible;
                 frame.set_visible(self.visible);
@@ -473,6 +530,16 @@ fn clock_window_frame(
                     Align2::LEFT_CENTER,
                     custom_clock,
                     FontId::proportional(50.0),
+                    gene_color(app.custom_number_color.to_owned(), text_color),
+                );
+            }
+
+            if app.show_tips != "" {
+                painter.text(
+                    rect.center_top() + vec2(45.0, 83.0),
+                    Align2::CENTER_CENTER,
+                    &app.show_tips,
+                    FontId::proportional(16.0),
                     gene_color(app.custom_number_color.to_owned(), text_color),
                 );
             }
