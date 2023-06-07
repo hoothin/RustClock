@@ -18,7 +18,14 @@ fn main() -> Result<(), eframe::Error> {
     let ini_path = dir.as_path();
     let result = fs::read_to_string(ini_path);
     if let Err(_) = result {
-       fs::write(ini_path, "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%").unwrap()
+        #[cfg(target_os = "windows")]
+        {
+            fs::write(ini_path, "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#tips=by the grave and thee\n#font_path=C:/Windows/Fonts/msyh.ttc").unwrap()
+        }
+        #[cfg(target_os = "macos")]
+        {
+            fs::write(ini_path, "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#tips=by the grave and thee\n#font_path=/System/Library/Fonts/STHeiti Light.ttc").unwrap()
+        }
     }
 
     let i = Ini::load_from_file(ini_path).unwrap();

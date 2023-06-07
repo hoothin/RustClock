@@ -248,10 +248,6 @@ pub fn handle_app_output(
         window.set_always_on_top(always_on_top);
     }
 
-    if let Some(always_on_top) = always_on_top {
-        window.set_always_on_top(always_on_top);
-    }
-
     if let Some(mouse_passthrough) = mouse_passthrough {
         window.set_cursor_hittest(mouse_passthrough).unwrap();
     }

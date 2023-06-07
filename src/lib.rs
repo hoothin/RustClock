@@ -326,7 +326,9 @@ impl eframe::App for RustClock {
             }
         }
 
-        clock_window_frame(ctx, frame, self, custom_clock);
+        if self.visible == true {
+            clock_window_frame(ctx, frame, self, custom_clock);
+        }
 
         if let Ok(TrayEvent {
             event: tray_icon::ClickEvent::Left,
@@ -442,7 +444,7 @@ fn clock_window_frame(
                     gene_color(app.custom_number_bg_color.to_owned(), Color32::from_rgb(0, 0, 0)),
                 );
                 painter.text(
-                    rect.center_top() + vec2(45.0, 83.0),
+                    rect.center_top() + vec2(45.0, 85.0),
                     Align2::CENTER_CENTER,
                     &app.show_tips,
                     FontId::proportional(16.0),
