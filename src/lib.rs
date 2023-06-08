@@ -328,6 +328,9 @@ impl eframe::App for RustClock {
 
         if self.visible == true {
             clock_window_frame(ctx, frame, self, custom_clock);
+            ctx.request_repaint_after(std::time::Duration::from_millis(300));
+        } else {
+            ctx.request_repaint_after(std::time::Duration::from_millis(1000));
         }
 
         if let Ok(TrayEvent {
@@ -506,5 +509,4 @@ fn clock_window_frame(
                 }
             }
         });
-    ctx.request_repaint_after(std::time::Duration::from_millis(300));
 }
