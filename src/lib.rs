@@ -40,7 +40,8 @@ pub struct RustClock {
     custom_clock_bg_color: String,
     tips_store: String,
     show_tips: String,
-    font_path: String
+    font_path: String,
+    show_time: f32
 }
 
 impl RustClock {
@@ -58,7 +59,8 @@ impl RustClock {
         custom_number_color: String,
         custom_clock_bg_color: String,
         tips_store: String,
-        font_path: String
+        font_path: String,
+        show_time: f32
     ) -> Result<RustClock, &'static str> {
         Ok(RustClock {
             quit_index,
@@ -76,6 +78,7 @@ impl RustClock {
             custom_clock_bg_color,
             tips_store,
             font_path,
+            show_time,
             ..RustClock::default()
         })
     }
@@ -134,6 +137,11 @@ impl eframe::App for RustClock {
                 if let Some(egui::Vec2 { x, y: _ }) = frame.info().window_info.monitor_size {
                     self.init_x = x as f32;
                 }
+            }
+            if self.show_time == 0.0 {
+                self.show_time = 100.0;
+            } else {
+                self.show_time = self.show_time / 16.0;
             }
         }
         
@@ -269,23 +277,23 @@ impl eframe::App for RustClock {
             }
         }
         if self.tikpop == true {
-            self.time += 2.0;
+            self.time += 1.0;
             frame.set_mouse_passthrough(false);
-            if self.time < 100.0 {
-                let mut add_x = (self.time / 200.0 * std::f32::consts::PI).sin() * 320.0;
+            if self.time < 50.0 {
+                let mut add_x = (self.time / 100.0 * std::f32::consts::PI).sin() * 320.0;
                 if self.pos_dir == "right" {
                     add_x = -add_x;
                 }
                 frame.set_window_pos(Pos2::new(self.init_x + add_x, self.init_y));
-            } else if self.time > 250.0 && self.time < 350.0 {
-                let mut add_x = ((self.time - 250.0) / 200.0 * std::f32::consts::PI).sin() * 320.0;
+            } else if self.time > self.show_time + 50.0 && self.time < self.show_time + 100.0 {
+                let mut add_x = ((self.time - self.show_time - 50.0) / 100.0 * std::f32::consts::PI).sin() * 320.0;
                 if self.pos_dir != "right" {
                     add_x = -add_x;
                 } else {
                     add_x = self.init_x + add_x - 320.0;
                 }
                 frame.set_window_pos(Pos2::new(add_x, self.init_y));
-            } else if self.time > 350.0 {
+            } else if self.time > self.show_time + 100.0 {
                 self.tikpop = false;
                 self.show_tips = "".to_string();
                 self.in_time_popup = false;
@@ -324,12 +332,12 @@ impl eframe::App for RustClock {
                     index = index + 1;
                 }
             }
+            ctx.request_repaint_after(std::time::Duration::from_millis(300));
         }
 
         if self.visible == true {
             clock_window_frame(ctx, frame, self, custom_clock);
         }
-        ctx.request_repaint_after(std::time::Duration::from_millis(300));
 
         if let Ok(TrayEvent {
             event: tray_icon::ClickEvent::Left,

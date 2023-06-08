@@ -18,14 +18,17 @@ fn main() -> Result<(), eframe::Error> {
     let ini_path = dir.as_path();
     let result = fs::read_to_string(ini_path);
     if let Err(_) = result {
+        let ini_default;
         #[cfg(target_os = "windows")]
         {
-            fs::write(ini_path, "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#tips=by the grave and thee\n#font_path=C:/Windows/Fonts/msyh.ttc").unwrap()
+            ini_default = "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#show_time=1000\n#tips=by the grave and thee\n#font_path=C:/Windows/Fonts/msyh.ttc";
         }
         #[cfg(target_os = "macos")]
         {
-            fs::write(ini_path, "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#tips=by the grave and thee\n#font_path=/System/Library/Fonts/STHeiti Light.ttc").unwrap()
+            ini_default = "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#show_time=1000\n#tips=by the grave and thee\n#font_path=/System/Library/Fonts/STHeiti Light.ttc";
         }
+
+        fs::write(ini_path, ini_default).unwrap();
     }
 
     let i = Ini::load_from_file(ini_path).unwrap();
@@ -42,6 +45,7 @@ fn main() -> Result<(), eframe::Error> {
     let mut custom_clock_bg_color = "".to_string();
     let mut tips_store = "".to_string();
     let mut font_path = "".to_string();
+    let mut show_time = 0.0;
     for (sec, prop) in i.iter() {
         if let Some(s) = sec {
             if s == "Config" {
@@ -73,6 +77,8 @@ fn main() -> Result<(), eframe::Error> {
                         tips_store = v.to_string();
                     } else if k == "font_path" {
                         font_path = v.to_string();
+                    } else if k == "show_time" {
+                        show_time = v.to_string().parse::<f32>().unwrap();
                     }
                 }
             }
@@ -146,7 +152,8 @@ fn main() -> Result<(), eframe::Error> {
                 custom_number_color,
                 custom_clock_bg_color,
                 tips_store,
-                font_path
+                font_path,
+                show_time
             ).unwrap())
         }),
     )
