@@ -328,10 +328,8 @@ impl eframe::App for RustClock {
 
         if self.visible == true {
             clock_window_frame(ctx, frame, self, custom_clock);
-            ctx.request_repaint_after(std::time::Duration::from_millis(300));
-        } else {
-            ctx.request_repaint_after(std::time::Duration::from_millis(1000));
         }
+        ctx.request_repaint_after(std::time::Duration::from_millis(300));
 
         if let Ok(TrayEvent {
             event: tray_icon::ClickEvent::Left,
@@ -351,6 +349,7 @@ impl eframe::App for RustClock {
                     self.last_pos_y = pos.y;
                 }
             }
+            ctx.request_repaint();
         }
         if let Ok(event) = MenuEvent::receiver().try_recv() {
             if event.id == self.quit_index {
@@ -362,6 +361,7 @@ impl eframe::App for RustClock {
                     frame.set_visible(self.visible);
                     self.countdown_start_time = Local::now().timestamp();
                 }
+                ctx.request_repaint();
             }
         }
     }
