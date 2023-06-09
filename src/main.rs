@@ -33,7 +33,7 @@ fn main() -> Result<(), eframe::Error> {
 
     let i = Ini::load_from_file(ini_path).unwrap();
     dir.pop();
-    let mut sound_path = String::from(dir.as_path().to_string_lossy()) + &"/*";
+    let mut sound_path = "".to_string();
     let mut time_str = "".to_string();
     let mut countdown = "".to_string();
     let mut pos_dir = "left".to_string();
@@ -53,7 +53,7 @@ fn main() -> Result<(), eframe::Error> {
                     if k == "time" {
                         time_str = v.to_string();
                     } else if k == "sound" {
-                        sound_path = sound_path + &v.to_string();
+                        sound_path = String::from(dir.as_path().to_string_lossy()) + &"/*" + &v.to_string();
                     } else if k == "countdown" {
                         countdown = v.to_string();
                     } else if k == "pos" {
