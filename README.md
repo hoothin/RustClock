@@ -90,3 +90,30 @@ number_color=0,0,0
 # 鐘面背景顏色
 clock_bg_color=235,235,235
 ```
++ show_time
+> The time that how long the popup will last. Set in milliseconds
+>
+> 彈出后持續顯示時長，按毫秒計算
+``` ini
+# Continuous display for 1000 milliseconds after pop-up
+# 彈出后持續顯示 1000 毫秒
+show_time=1000
+```
++ tips
+> Text displayed when pop-up, format as same as `sound`
+>
+> 彈出后顯示的文字，格式同 `sound`
+``` ini
+# display 'by the grave and thee' when pop-up
+# 彈出時顯示 'by the grave and thee'
+tips=by the grave and thee
+```
++ font_path
+> The font path which is used by tips
+>
+> 彈出文字使用的字體路徑
+``` ini
+# use font which is located in 'C:/Windows/Fonts/zongyi.TTF'
+# 使用位於 'C:/Windows/Fonts/zongyi.TTF' 的字體
+font_path=C:/Windows/Fonts/zongyi.TTF
+```
