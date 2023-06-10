@@ -1,5 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
+use egui_extras::RetainedImage;
+use std::io::Read;
 use rust_clock::RustClock;
 
 use eframe::egui;
@@ -21,11 +23,11 @@ fn main() -> Result<(), eframe::Error> {
         let ini_default;
         #[cfg(target_os = "windows")]
         {
-            ini_default = "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#show_time=1000\n#tips=by the grave and thee\n#font_path=C:/Windows/Fonts/msyh.ttc";
+            ini_default = "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#show_time=1000\n#bg=assets/bg.png\n#tips=by the grave and thee\n#font_path=C:/Windows/Fonts/msyh.ttc";
         }
         #[cfg(target_os = "macos")]
         {
-            ini_default = "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#show_time=1000\n#tips=by the grave and thee\n#font_path=/System/Library/Fonts/STHeiti Light.ttc";
+            ini_default = "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#show_time=1000\n#bg=assets/bg.png\n#tips=by the grave and thee\n#font_path=/System/Library/Fonts/STHeiti Light.ttc";
         }
 
         fs::write(ini_path, ini_default).unwrap();
@@ -46,6 +48,7 @@ fn main() -> Result<(), eframe::Error> {
     let mut tips_store = "".to_string();
     let mut font_path = "".to_string();
     let mut show_time = 0.0;
+    let mut image = Err("".to_string());
     for (sec, prop) in i.iter() {
         if let Some(s) = sec {
             if s == "Config" {
@@ -79,6 +82,14 @@ fn main() -> Result<(), eframe::Error> {
                         font_path = v.to_string();
                     } else if k == "show_time" {
                         show_time = v.to_string().parse::<f32>().unwrap();
+                    } else if k == "bg" {
+                        let bg_path = std::path::PathBuf::from(v);
+                        let result = fs::File::open(&bg_path);
+                        if let Ok(mut bg_file) = result {
+                            let mut buffer = vec![];
+                            bg_file.read_to_end(&mut buffer).unwrap();
+                            image = RetainedImage::from_image_bytes("clock", &buffer[..]);
+                        }
                     }
                 }
             }
@@ -153,7 +164,8 @@ fn main() -> Result<(), eframe::Error> {
                 custom_clock_bg_color,
                 tips_store,
                 font_path,
-                show_time
+                show_time,
+                image
             ).unwrap())
         }),
     )

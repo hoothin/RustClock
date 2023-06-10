@@ -1,5 +1,6 @@
 use crate::egui::Color32;
 use crate::egui::Pos2;
+use egui_extras::image::RetainedImage;
 use eframe::egui;
 use tray_icon::{
     menu::{MenuEvent},
@@ -12,7 +13,6 @@ use std::fs;
 use std::io::BufReader;
 use rodio::{Decoder, OutputStream, Sink};
 
-#[derive(Default)]
 pub struct RustClock {
     quit_index: u32,
     time: f32,
@@ -41,7 +41,9 @@ pub struct RustClock {
     tips_store: String,
     show_tips: String,
     font_path: String,
-    show_time: f32
+    show_time: f32,
+    now: DateTime<Local>,
+    image: Result<RetainedImage, String>
 }
 
 impl RustClock {
@@ -60,26 +62,40 @@ impl RustClock {
         custom_clock_bg_color: String,
         tips_store: String,
         font_path: String,
-        show_time: f32
+        show_time: f32,
+        image: Result<RetainedImage, String>
     ) -> Result<RustClock, &'static str> {
         Ok(RustClock {
             quit_index,
-            visible: true,
+            time: 0.0,
             time2show,
+            tikpop: false,
+            visible: true,
+            last_pos_x: 0.0,
+            last_pos_y: 0.0,
+            last_visible: false,
             sound_path,
             countdown,
             countdown_index,
-            pos_dir,
+            inited: false,
+            countdown_start: false,
+            countdown_start_time: 0,
+            in_time_popup: false,
             pos_pc,
+            pos_dir,
+            init_x: 0.0,
+            init_y: 0.0,
             custom_bg_color,
             custom_border_color,
             custom_number_bg_color,
             custom_number_color,
             custom_clock_bg_color,
             tips_store,
+            show_tips: "".to_string(),
             font_path,
             show_time,
-            ..RustClock::default()
+            now: Local::now(),
+            image
         })
     }
 }
@@ -213,12 +229,14 @@ impl eframe::App for RustClock {
             }
             ctx.request_repaint();
         };
+        self.now = Local::now();
         let mut custom_clock = "".to_string();
         if self.countdown_start == true && self.in_time_popup == false {
-            let over_time = (Local::now().timestamp() - self.countdown_start_time) as i32;
+            let timestamp = self.now.timestamp();
+            let over_time = (timestamp - self.countdown_start_time) as i32;
             if self.countdown == "" {
                 if over_time > 600 {
-                    self.countdown_start_time = Local::now().timestamp();
+                    self.countdown_start_time = timestamp;
                     if self.tikpop == false {
                         begin_tik(0, self.in_time_popup);
                         self.tikpop = true;
@@ -263,7 +281,7 @@ impl eframe::App for RustClock {
                     index = index + 1;
                 }
                 if custom_clock == "" {
-                    self.countdown_start_time = Local::now().timestamp();
+                    self.countdown_start_time = timestamp;
                     let left_time = first_time as f32;
                     let hour = (left_time / 60.0 / 60.0) as u32;
                     let minute = (left_time / 60.0) as u32;
@@ -310,10 +328,9 @@ impl eframe::App for RustClock {
             ctx.request_repaint_after(std::time::Duration::from_millis(16));
         } else {
             self.in_time_popup = false;
-            let now: DateTime<Local> = Local::now();
-            let hour = now.hour().to_string();
-            let minute = now.minute().to_string();
-            let second = now.second().to_string();
+            let hour = self.now.hour().to_string();
+            let minute = self.now.minute().to_string();
+            let second = self.now.second().to_string();
             if self.time2show != "" {
                 let time2show_arr: Vec<&str> = self.time2show.split(',').collect();
                 let mut index:i32 = 0;
@@ -367,7 +384,7 @@ impl eframe::App for RustClock {
                 if self.countdown_start == true {
                     self.visible = true;
                     frame.set_visible(self.visible);
-                    self.countdown_start_time = Local::now().timestamp();
+                    self.countdown_start_time = self.now.timestamp();
                 }
                 ctx.request_repaint();
             }
@@ -408,7 +425,6 @@ fn clock_window_frame(
         .show(ctx, |ui| {
             let rect = ui.max_rect();
             let painter = ui.painter();
-            let now: DateTime<Local> = Local::now();
 
             painter.rect(
                 rect.shrink(1.0),
@@ -416,6 +432,25 @@ fn clock_window_frame(
                 gene_color(app.custom_bg_color.to_owned(), Color32::from_rgba_premultiplied(32, 33, 36, 200)),
                 Stroke::new(1.0, gene_color(app.custom_border_color.to_owned(), text_color)),
             );
+
+            let mut has_bg = false;
+            if let Ok(image) = &app.image {
+                has_bg = true;
+                let mut size = image.size_vec2();
+                if size.x / size.y > 1.5 {
+                    size *= 100.0 / size.y;
+                    image.show_size(ui, size);
+                } else {
+                    size *= 80.0 / size.y;
+                    let mut img_ui = ui.child_ui(Rect::from_points(&[
+                            Pos2::new(15.0, 10.0),
+                            Pos2::new(95.0, 90.0)
+                        ]), *ui.layout());
+                    image.show_size(&mut img_ui, size);
+                }
+            }
+
+            let painter = ui.painter();
 
             painter.rect_filled(
                 Rect::from_points(&[
@@ -431,7 +466,7 @@ fn clock_window_frame(
                 painter.text(
                     rect.center_top() + vec2(-41.0, 51.0),
                     Align2::LEFT_CENTER,
-                    now.format("%H:%M:%S"),
+                    app.now.format("%H:%M:%S"),
                     FontId::proportional(50.0),
                     gene_color(app.custom_number_color.to_owned(), text_color),
                 );
@@ -463,15 +498,17 @@ fn clock_window_frame(
                 );
             }
 
-            painter.circle_filled(
-                Pos2::new(55.0, 50.0),
-                40.0,
-                gene_color(app.custom_clock_bg_color.to_owned(), text_color)
-            );
+            if has_bg == false {
+                painter.circle_filled(
+                    Pos2::new(55.0, 50.0),
+                    40.0,
+                    gene_color(app.custom_clock_bg_color.to_owned(), text_color)
+                );
+            }
 
-            let (_, hour) = now.hour12();
-            let minute = now.minute() as f32;
-            let second = now.second() as f32;
+            let (_, hour) = app.now.hour12();
+            let minute = app.now.minute() as f32;
+            let second = app.now.second() as f32;
             let rad = (hour as f32 + minute / 60.0) / 12.0 * std::f32::consts::PI * 2.0;
             //hour
             painter.line_segment(

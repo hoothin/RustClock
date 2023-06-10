@@ -2,8 +2,6 @@
 resolver = "2"
 members = [
     "crates/ecolor",
-    "crates/egui_demo_app",
-    "crates/egui_demo_lib",
     "crates/egui_extras",
     "crates/egui_glow",
     "crates/egui-wgpu",
@@ -17,12 +15,15 @@ members = [
 name = "rust_clock"
 authors = ["Hoothin <rixixi@gmail.com>"]
 license = "MIT"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 description = "Clock popup every half hour"
 build = "build.rs"
 
 [dependencies]
+egui_extras = { path = "crates/egui_extras", features = [
+  "image"
+] }
 eframe = { path = "crates/eframe", features = [
     "__screenshot", # __screenshot is so we can dump a ascreenshot using EFRAME_SCREENSHOT_TO
 ] }
