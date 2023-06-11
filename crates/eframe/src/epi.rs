@@ -840,6 +840,7 @@ pub struct WindowInfo {
 
     /// Current monitor size in egui points (logical pixels)
     pub monitor_size: Option<egui::Vec2>,
+    pub monitor_position: Option<egui::Vec2>,
 }
 
 /// Information about the URL.

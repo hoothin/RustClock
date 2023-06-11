@@ -37,6 +37,13 @@ pub fn read_window_info(window: &winit::window::Window, pixels_per_point: f32) -
         None
     };
 
+    let monitor_position = if monitor {
+        let position = window.current_monitor().unwrap().position();
+        Some(egui::vec2(position.x as _, position.y as _))
+    } else {
+        None
+    };
+
     let size = window
         .inner_size()
         .to_logical::<f32>(pixels_per_point.into());
@@ -49,6 +56,7 @@ pub fn read_window_info(window: &winit::window::Window, pixels_per_point: f32) -
             y: size.height,
         },
         monitor_size,
+        monitor_position,
     }
 }
 

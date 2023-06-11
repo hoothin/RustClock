@@ -141,19 +141,7 @@ impl eframe::App for RustClock {
                 .or_default()
                 .insert(0, "my_font".to_owned());
             ctx.set_fonts(fonts);
-            self.init_y = 50.0;
-            self.init_x = -320.0;
-            if self.pos_pc != 0 {
-                if let Some(egui::Vec2 { x: _, y }) = frame.info().window_info.monitor_size {
-                    let pos = self.pos_pc as f32 / 100.0 * y;
-                    self.init_y = pos;
-                }
-            }
-            if self.pos_dir == "right" {
-                if let Some(egui::Vec2 { x, y: _ }) = frame.info().window_info.monitor_size {
-                    self.init_x = x as f32;
-                }
-            }
+
             if self.show_time == 0.0 {
                 self.show_time = 100.0;
             } else {
@@ -172,6 +160,23 @@ impl eframe::App for RustClock {
             self.visible = true;
             frame.set_visible(self.visible);
             self.time = 0.0;
+
+            self.init_y = 50.0;
+            self.init_x = -320.0;
+            if self.pos_pc != -1 {
+                if let Some(egui::Vec2 { x, y }) = frame.info().window_info.monitor_size {
+                    let pos = self.pos_pc as f32 / 100.0 * y;
+                    self.init_y = pos;
+                    if self.pos_dir == "right" {
+                        self.init_x = x as f32;
+                    }
+                }
+            }
+
+            if let Some(egui::Vec2 { x, y }) = frame.info().window_info.monitor_position {
+                self.init_x = x as f32 + &self.init_x;
+                self.init_y = y as f32 + &self.init_y;
+            }
             frame.set_window_pos(Pos2::new(self.init_x, self.init_y));
             if self.sound_path != "" {
                 let mut path = "".to_string();
@@ -306,7 +311,7 @@ impl eframe::App for RustClock {
             } else if self.time > self.show_time + 50.0 && self.time < self.show_time + 100.0 {
                 let mut add_x = ((self.time - self.show_time - 50.0) / 100.0 * std::f32::consts::PI).sin() * 320.0;
                 if self.pos_dir != "right" {
-                    add_x = -add_x;
+                    add_x = self.init_x - add_x + 320.0;
                 } else {
                     add_x = self.init_x + add_x - 320.0;
                 }

@@ -39,7 +39,7 @@ fn main() -> Result<(), eframe::Error> {
     let mut time_str = "".to_string();
     let mut countdown = "".to_string();
     let mut pos_dir = "left".to_string();
-    let mut pos_pc = 0;
+    let mut pos_pc = -1;
     let mut custom_bg_color = "".to_string();
     let mut custom_border_color = "".to_string();
     let mut custom_number_bg_color = "".to_string();
@@ -98,7 +98,11 @@ fn main() -> Result<(), eframe::Error> {
 
     dir.push("assets");
     dir.push("icon.png");
-    let icon = load_icon(dir.as_path());
+    let mut icon_exist = false;
+    let result = fs::read(dir.as_path());
+    if let Ok(_) = result {
+        icon_exist = true;
+    }
 
     let tray_menu = Menu::new();
     let quit_i = MenuItem::new("Quit", true, None);
@@ -142,12 +146,24 @@ fn main() -> Result<(), eframe::Error> {
             {
                 tray_c
                     .borrow_mut()
-                    .replace(TrayIconBuilder::new()
-                    .with_menu(Box::new(tray_menu))
-                    .with_tooltip("Rust clock")
-                    .with_icon(icon)
-                    .build()
-                    .unwrap());
+                    .replace(
+                        if icon_exist == true {
+                            let icon = load_icon(dir.as_path());
+                            TrayIconBuilder::new()
+                                .with_menu(Box::new(tray_menu))
+                                .with_tooltip("Rust clock")
+                                .with_icon(icon)
+                                .build()
+                                .unwrap()
+                        } else {
+                            TrayIconBuilder::new()
+                                .with_menu(Box::new(tray_menu))
+                                .with_tooltip("Rust clock")
+                                .with_title("⏰")
+                                .build()
+                                .unwrap()
+                        }
+                    );
             }
             Box::new(RustClock::new(
                 quit_i.id(),
