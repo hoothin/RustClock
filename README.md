@@ -117,3 +117,10 @@ tips=by the grave and thee
 # 使用位於 'C:/Windows/Fonts/zongyi.TTF' 的字體
 font_path=C:/Windows/Fonts/zongyi.TTF
 ```
++ bg
+> The path of background image, 80\*80 for clock, 320\*100 for total background
+>
+> 背景圖片的路徑，尺寸為 80\*80 時設置為鐘面背景，尺寸為 320\*100 時設置為整體背景
+``` ini
+bg=assets/bg.png
+```
