@@ -354,7 +354,7 @@ impl eframe::App for RustClock {
                     index = index + 1;
                 }
             }
-            ctx.request_repaint_after(std::time::Duration::from_millis(300));
+            ctx.request_repaint_after(std::time::Duration::from_millis(250));
         }
 
         if self.visible == true {
