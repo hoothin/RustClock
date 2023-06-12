@@ -102,7 +102,7 @@ show_time=1000
 + tips
 > Text displayed when pop-up, format as same as `sound`
 >
-> 彈出后顯示的文字，格式同 `sound`
+> 彈出后顯示的文字，格式同 `sound`，可設置多個
 ``` ini
 # display 'by the grave and thee' when pop-up
 # 彈出時顯示 'by the grave and thee'
