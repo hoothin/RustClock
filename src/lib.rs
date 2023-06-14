@@ -563,9 +563,9 @@ fn clock_window_frame(
             painter.line_segment(
                 [
                     Pos2::new(55.0, 50.0),
-                    Pos2::new(55.0, 50.0) + vec2(rad.sin() * 25.0, rad.cos() * -25.0),
+                    Pos2::new(55.0, 50.0) + vec2(rad.sin() * 25.0, rad.cos() * -22.0),
                 ],
-                Stroke::new(3.0, Color32::from_rgb(0, 0, 0)),
+                Stroke::new(3.0, Color32::from_rgba_premultiplied(0, 0, 0, 150)),
             );
             let rad = minute / 60.0 * std::f32::consts::PI * 2.0;
             //minute
@@ -574,7 +574,7 @@ fn clock_window_frame(
                     Pos2::new(55.0, 50.0),
                     Pos2::new(55.0, 50.0) + vec2(rad.sin() * 35.0, rad.cos() * -35.0),
                 ],
-                Stroke::new(2.0, Color32::from_rgb(0, 0, 0)),
+                Stroke::new(2.0, Color32::from_rgba_premultiplied(0, 0, 0, 150)),
             );
             let rad = second / 60.0 * std::f32::consts::PI * 2.0;
             //second
@@ -583,7 +583,7 @@ fn clock_window_frame(
                     Pos2::new(55.0, 50.0),
                     Pos2::new(55.0, 50.0) + vec2(rad.sin() * 38.0, rad.cos() * -38.0),
                 ],
-                Stroke::new(1.0, Color32::from_rgb(255, 0, 0)),
+                Stroke::new(1.0, Color32::from_rgba_premultiplied(255, 0, 0, 150)),
             );
 
             let title_bar_response =
