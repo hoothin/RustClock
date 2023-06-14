@@ -20,14 +20,14 @@ fn main() -> Result<(), eframe::Error> {
     let ini_path = dir.as_path();
     let result = fs::read_to_string(ini_path);
     if let Err(_) = result {
-        let ini_default;
+        let mut ini_default = "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#show_time=1000\n#bg=assets/bg.png\n#init_show=0\n#timezone=+8\n#time_font=\n#tips=by the grave and thee\n#font_path=".to_string();
         #[cfg(target_os = "windows")]
         {
-            ini_default = "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#show_time=1000\n#bg=assets/bg.png\n#tips=by the grave and thee\n#font_path=C:/Windows/Fonts/msyh.ttc";
+            ini_default = ini_default.to_owned() + &"C:/Windows/Fonts/msyh.ttc";
         }
         #[cfg(target_os = "macos")]
         {
-            ini_default = "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#show_time=1000\n#bg=assets/bg.png\n#tips=by the grave and thee\n#font_path=/System/Library/Fonts/STHeiti Light.ttc";
+            ini_default = ini_default.to_owned() + &"/System/Library/Fonts/STHeiti Light.ttc";
         }
 
         fs::write(ini_path, ini_default).unwrap();
@@ -47,6 +47,10 @@ fn main() -> Result<(), eframe::Error> {
     let mut custom_clock_bg_color = "".to_string();
     let mut tips_store = "".to_string();
     let mut font_path = "".to_string();
+    let mut init_show = 1;
+    let mut timezone = 0;
+    let mut custom_timezone = false;
+    let mut time_font = "".to_string();
     let mut show_time = 0.0;
     let mut image = Err("".to_string());
     for (sec, prop) in i.iter() {
@@ -82,6 +86,13 @@ fn main() -> Result<(), eframe::Error> {
                         font_path = v.to_string();
                     } else if k == "show_time" {
                         show_time = v.to_string().parse::<f32>().unwrap();
+                    } else if k == "init_show" {
+                        init_show = v.to_string().parse::<i32>().unwrap();
+                    } else if k == "timezone" {
+                        timezone = v.to_string().parse::<i32>().unwrap();
+                        custom_timezone = true;
+                    } else if k == "time_font" {
+                        time_font = v.to_string();
                     } else if k == "bg" {
                         let bg_path = std::path::PathBuf::from(v);
                         let result = fs::File::open(&bg_path);
@@ -181,7 +192,11 @@ fn main() -> Result<(), eframe::Error> {
                 tips_store,
                 font_path,
                 show_time,
-                image
+                image,
+                init_show,
+                timezone,
+                custom_timezone,
+                time_font
             ).unwrap())
         }),
     )

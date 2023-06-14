@@ -7,7 +7,7 @@ use tray_icon::{
     TrayEvent,
 };
 
-use chrono::{DateTime, Timelike, Local};
+use chrono::{DateTime, Timelike, Local, Utc, FixedOffset, TimeZone};
 
 use std::fs;
 use std::io::BufReader;
@@ -42,8 +42,12 @@ pub struct RustClock {
     show_tips: String,
     font_path: String,
     show_time: f32,
-    now: DateTime<Local>,
-    image: Result<RetainedImage, String>
+    now: DateTime<FixedOffset>,
+    image: Result<RetainedImage, String>,
+    init_show: i32,
+    timezone: i32,
+    custom_timezone: bool,
+    time_font: String
 }
 
 impl RustClock {
@@ -63,7 +67,11 @@ impl RustClock {
         tips_store: String,
         font_path: String,
         show_time: f32,
-        image: Result<RetainedImage, String>
+        image: Result<RetainedImage, String>,
+        init_show: i32,
+        timezone: i32,
+        custom_timezone: bool,
+        time_font: String
     ) -> Result<RustClock, &'static str> {
         Ok(RustClock {
             quit_index,
@@ -94,8 +102,12 @@ impl RustClock {
             show_tips: "".to_string(),
             font_path,
             show_time,
-            now: Local::now(),
-            image
+            now: Local::now().into(),
+            image,
+            init_show,
+            timezone,
+            custom_timezone,
+            time_font
         })
     }
 }
@@ -131,16 +143,34 @@ impl eframe::App for RustClock {
                     .or_default()
                     .insert(0, "other_font".to_owned());
             }
-            fonts.font_data.insert(
-                "my_font".to_owned(),
-                egui::FontData::from_static(include_bytes!("../assets/font.ttf")),
-            );
+
+            if self.time_font != "" {
+                let result = std::fs::read(&self.time_font);
+                if let Ok(font) = result {
+                    fonts.font_data.insert(
+                        "time_font".to_owned(),
+                        egui::FontData::from_owned(font)
+                    );
+                } else {
+                    self.time_font = "".to_string();
+                }
+            } else {
+                fonts.font_data.insert(
+                    "time_font".to_owned(),
+                    egui::FontData::from_static(include_bytes!("../assets/font.ttf")),
+                );
+            }
             fonts
                 .families
-                .entry(egui::FontFamily::Proportional)
+                .entry(egui::FontFamily::Monospace)
                 .or_default()
-                .insert(0, "my_font".to_owned());
+                .insert(0, "time_font".to_owned());
             ctx.set_fonts(fonts);
+
+            if self.init_show == 0 {
+                self.visible = false;
+                frame.set_visible(false);
+            }
 
             if self.show_time == 0.0 {
                 self.show_time = 100.0;
@@ -234,7 +264,20 @@ impl eframe::App for RustClock {
             }
             ctx.request_repaint();
         };
-        self.now = Local::now();
+
+        if self.custom_timezone == true {
+            let tz_offset;
+            if self.timezone < 0 {
+                tz_offset = FixedOffset::west_opt(self.timezone * 3600).unwrap();
+            } else {
+                tz_offset = FixedOffset::east_opt(self.timezone * 3600).unwrap();
+            }
+            let timezone: FixedOffset = TimeZone::from_offset(&tz_offset);
+            self.now = Utc::now().with_timezone(&timezone);
+        } else {
+            self.now = Local::now().into();
+            self.now = self.now.with_hour(Local::now().hour()).unwrap();
+        }
         let mut custom_clock = "".to_string();
         if self.countdown_start == true && self.in_time_popup == false {
             let timestamp = self.now.timestamp();
@@ -467,12 +510,13 @@ fn clock_window_frame(
             );
 
             // Paint the title:
+            let font = FontId::monospace(50.0);
             if custom_clock == "" {
                 painter.text(
                     rect.center_top() + vec2(-41.0, 51.0),
                     Align2::LEFT_CENTER,
                     app.now.format("%H:%M:%S"),
-                    FontId::proportional(50.0),
+                    font,
                     gene_color(app.custom_number_color.to_owned(), text_color),
                 );
             } else {
@@ -480,7 +524,7 @@ fn clock_window_frame(
                     rect.center_top() + vec2(-41.0, 51.0),
                     Align2::LEFT_CENTER,
                     custom_clock,
-                    FontId::proportional(50.0),
+                    font,
                     gene_color(app.custom_number_color.to_owned(), text_color),
                 );
             }
