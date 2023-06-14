@@ -124,3 +124,24 @@ font_path=C:/Windows/Fonts/zongyi.TTF
 ``` ini
 bg=assets/bg.png
 ```
++ init_show
+> Show clock after initialization, 0 means disable, 1 means enable
+>
+> 啓動后立即顯示，0 為禁用顯示，1 為啓用
+``` ini
+init_show=0
+```
++ timezone
+> Timezone of clock, from -12 to +12
+>
+> 時區，從 -12（西12區） 到 +12（東12區）
+``` ini
+timezone=+9
+```
++ time_font
+> The font path which is used by time number
+>
+> 時刻數字使用的字體路徑
+``` ini
+time_font=C:/Windows/Fonts/zongyi.TTF
+```
