@@ -13,8 +13,8 @@ brew install hoothin/rust_clock/rust_clock
 ```
 
 # Config
-Edit the conf.ini beside rust_clock.
-> 編輯可執行文件旁的 conf.ini。
+Edit the conf.ini beside rust_clock, delete `#`.
+> 編輯可執行文件旁的 conf.ini，去除对应项前的注释符号`#`。
 + time
 > The time when rust clock will popup, set by `hour:minute:second`. Split multi-time by `,`.
 > 
