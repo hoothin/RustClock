@@ -47,7 +47,8 @@ pub struct RustClock {
     init_show: i32,
     timezone: i32,
     custom_timezone: bool,
-    time_font: String
+    time_font: String,
+    round: bool
 }
 
 impl RustClock {
@@ -71,7 +72,8 @@ impl RustClock {
         init_show: i32,
         timezone: i32,
         custom_timezone: bool,
-        time_font: String
+        time_font: String,
+        round: bool
     ) -> Result<RustClock, &'static str> {
         Ok(RustClock {
             quit_index,
@@ -107,7 +109,8 @@ impl RustClock {
             init_show,
             timezone,
             custom_timezone,
-            time_font
+            time_font,
+            round
         })
     }
 }
@@ -474,9 +477,15 @@ fn clock_window_frame(
             let rect = ui.max_rect();
             let painter = ui.painter();
 
+            let round;
+            if app.round {
+                round = 10.0;
+            } else {
+                round = 0.0;
+            }
             painter.rect(
                 rect.shrink(1.0),
-                10.0,
+                round,
                 gene_color(app.custom_bg_color.to_owned(), Color32::from_rgba_premultiplied(32, 33, 36, 200)),
                 Stroke::new(1.0, gene_color(app.custom_border_color.to_owned(), text_color)),
             );

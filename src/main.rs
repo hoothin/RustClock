@@ -20,7 +20,7 @@ fn main() -> Result<(), eframe::Error> {
     let ini_path = dir.as_path();
     let result = fs::read_to_string(ini_path);
     if let Err(_) = result {
-        let mut ini_default = "[Config]\ntime=:30:,:00:\n#sound=assets/sound.ogg\n#countdown=:20:,::20\n#pos=left,5%\n#show_time=1000\n#bg=assets/bg.png\n#init_show=0\n#timezone=+8\n#time_font=\n#tips=by the grave and thee\n#font_path=".to_string();
+        let mut ini_default = "[Config]\ntime=:30:,:00:\n# sound=assets/sound.ogg\n# countdown=:20:,::20\n# pos=left,5%\n# round=0\n# show_time=1000\n# bg=assets/bg.png\n# init_show=0\n# timezone=+8\n# time_font=\n# tips=by the grave and thee\n# font_path=".to_string();
         #[cfg(target_os = "windows")]
         {
             ini_default = ini_default.to_owned() + &"C:/Windows/Fonts/msyh.ttc";
@@ -50,6 +50,7 @@ fn main() -> Result<(), eframe::Error> {
     let mut init_show = 1;
     let mut timezone = 0;
     let mut custom_timezone = false;
+    let mut round = true;
     let mut time_font = "".to_string();
     let mut show_time = 0.0;
     let mut image = Err("".to_string());
@@ -93,6 +94,8 @@ fn main() -> Result<(), eframe::Error> {
                         custom_timezone = true;
                     } else if k == "time_font" {
                         time_font = v.to_string();
+                    } else if k == "round" {
+                        round = v != "0";
                     } else if k == "bg" {
                         let bg_path = std::path::PathBuf::from(v);
                         let result = fs::File::open(&bg_path);
@@ -196,7 +199,8 @@ fn main() -> Result<(), eframe::Error> {
                 init_show,
                 timezone,
                 custom_timezone,
-                time_font
+                time_font,
+                round
             ).unwrap())
         }),
     )
