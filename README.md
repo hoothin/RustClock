@@ -13,8 +13,8 @@ brew install hoothin/rust_clock/rust_clock
 ```
 
 # Config
-Edit the conf.ini beside rust_clock.
-> 編輯可執行文件旁的 conf.ini。
+Edit the conf.ini beside rust_clock, delete `#`.
+> 編輯可執行文件旁的 conf.ini，去除对应项前的注释符号`#`。
 + time
 > The time when rust clock will popup, set by `hour:minute:second`. Split multi-time by `,`.
 > 
@@ -123,4 +123,25 @@ font_path=C:/Windows/Fonts/zongyi.TTF
 > 背景圖片的路徑，尺寸為 80\*80 時設置為鐘面背景，尺寸為 320\*100 時設置為整體背景
 ``` ini
 bg=assets/bg.png
+```
++ init_show
+> Show clock after initialization, 0 means disable, 1 means enable
+>
+> 啓動后立即顯示，0 為禁用顯示，1 為啓用
+``` ini
+init_show=0
+```
++ timezone
+> Timezone of clock, from -12 to +12
+>
+> 時區，從 -12（西12區） 到 +12（東12區）
+``` ini
+timezone=+9
+```
++ time_font
+> The font path which is used by time number
+>
+> 時刻數字使用的字體路徑
+``` ini
+time_font=C:/Windows/Fonts/zongyi.TTF
 ```
