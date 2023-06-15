@@ -145,3 +145,10 @@ timezone=+9
 ``` ini
 time_font=C:/Windows/Fonts/zongyi.TTF
 ```
++ round
+> Round the corners of frame, 0 means no
+>
+> 是否使用圓角邊框，0 為 否
+``` ini
+round=0
+```
