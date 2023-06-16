@@ -16,19 +16,19 @@ brew install hoothin/rust_clock/rust_clock
 Edit the conf.ini beside rust_clock, delete `#`.
 > 編輯可執行文件旁的 conf.ini，去除对应项前的注释符号`#`。
 ## TOC
-1. [time](#time)
-2. [sound](#sound)
-3. [countdown](#countdown)
-4. [pos](#pos)
-5. [color](#color)
-6. [show_time](#show_time)
-7. [tips](#tips)
-8. [font_path](#font_path)
-9. [bg](#bg)
-10. [init_show](#init_show)
-11. [timezone](#timezone)
-12. [time_font](#time_font)
-13. [round](#round)
+1. [time 時刻](#time)
+2. [sound 音效](#sound)
+3. [countdown 倒計時](#countdown)
+4. [pos 位置](#pos)
+5. [color 顔色](#color)
+6. [show_time 駐留時間](#show_time)
+7. [tips 提示文字](#tips)
+8. [font_path 提示字體](#font_path)
+9. [bg 背景圖](#bg)
+10. [init_show 啓動時顯示](#init_show)
+11. [timezone 時區](#timezone)
+12. [time_font 時間數字字體](#time_font)
+13. [round 圓角](#round)
 
 ---
 
