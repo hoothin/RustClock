@@ -15,7 +15,25 @@ brew install hoothin/rust_clock/rust_clock
 # Config
 Edit the conf.ini beside rust_clock, delete `#`.
 > 編輯可執行文件旁的 conf.ini，去除对应项前的注释符号`#`。
+## TOC
+1. [time](#time)
+2. [sound](#sound)
+3. [countdown](#countdown)
+4. [pos](#pos)
+5. [color](#color)
+6. [show_time](#show_time)
+7. [tips](#tips)
+8. [font_path](#font_path)
+9. [bg](#bg)
+10. [init_show](#init_show)
+11. [timezone](#timezone)
+12. [time_font](#time_font)
+13. [round](#round)
+
+---
+
 + time
+<a id="time"></a>
 > The time when rust clock will popup, set by `hour:minute:second`. Split multi-time by `,`.
 > 
 > 設置 rust clock 彈出的時刻，使用 `時:分:秒` 的格式，多個時刻使用 `,` 分隔。
@@ -30,6 +48,7 @@ time=:30:
 time=:30:,15::0
 ```
 + sound
+<a id="sound"></a>
 > The sound file you wish to play when clock popup.
 >
 > 彈出時播放的音效文件
@@ -49,6 +68,7 @@ sound=assets/1.mp3|assets/2.mp3
 sound=assets/1.mp3|assets/2.mp3*assets/3.mp3|assets/4.mp3
 ```
 + countdown
+<a id="countdown"></a>
 > The countdown time, set by `hour:minute:second`. Split multi-time by `,`.
 >
 > 倒計時，使用 `時:分:秒` 的格式，多個倒計時使用 `,` 分隔。
@@ -57,6 +77,7 @@ sound=assets/1.mp3|assets/2.mp3*assets/3.mp3|assets/4.mp3
 countdown=:20:,::20
 ```
 + pos
+<a id="pos"></a>
 > The position where will rust clock popup.
 >
 > rust clock 的彈出位置。
@@ -66,6 +87,7 @@ countdown=:20:,::20
 pos=right,20%
 ```
 + color
+<a id="color"></a>
 > The color of rust clock. Format by r,g,b or r,g,b,a
 >
 > rust clock 各個位置的顔色。格式為 r,g,b 或者 r,g,b,a
@@ -91,6 +113,7 @@ number_color=0,0,0
 clock_bg_color=235,235,235
 ```
 + show_time
+<a id="show_time"></a>
 > The time that how long the popup will last. Set in milliseconds
 >
 > 彈出后持續顯示時長，按毫秒計算
@@ -100,6 +123,7 @@ clock_bg_color=235,235,235
 show_time=1000
 ```
 + tips
+<a id="tips"></a>
 > Text displayed when pop-up, format as same as `sound`
 >
 > 彈出后顯示的文字，格式同 `sound`，可設置多個
@@ -109,6 +133,7 @@ show_time=1000
 tips=by the grave and thee
 ```
 + font_path
+<a id="font_path"></a>
 > The font path which is used by tips
 >
 > 彈出文字使用的字體路徑
@@ -118,6 +143,7 @@ tips=by the grave and thee
 font_path=C:/Windows/Fonts/zongyi.TTF
 ```
 + bg
+<a id="bg"></a>
 > The path of background image, 80\*80 for clock, 320\*100 for total background
 >
 > 背景圖片的路徑，尺寸為 80\*80 時設置為鐘面背景，尺寸為 320\*100 時設置為整體背景
@@ -125,6 +151,7 @@ font_path=C:/Windows/Fonts/zongyi.TTF
 bg=assets/bg.png
 ```
 + init_show
+<a id="init_show"></a>
 > Show clock after initialization, 0 means disable, 1 means enable
 >
 > 啓動后立即顯示，0 為禁用顯示，1 為啓用
@@ -132,6 +159,7 @@ bg=assets/bg.png
 init_show=0
 ```
 + timezone
+<a id="timezone"></a>
 > Timezone of clock, from -12 to +12
 >
 > 時區，從 -12（西12區） 到 +12（東12區）
@@ -139,6 +167,7 @@ init_show=0
 timezone=+9
 ```
 + time_font
+<a id="time_font"></a>
 > The font path which is used by time number
 >
 > 時刻數字使用的字體路徑
@@ -146,6 +175,7 @@ timezone=+9
 time_font=C:/Windows/Fonts/zongyi.TTF
 ```
 + round
+<a id="round"></a>
 > Round the corners of frame, 0 means no
 >
 > 是否使用圓角邊框，0 為 否
