@@ -53,6 +53,7 @@ fn main() -> Result<(), eframe::Error> {
     let mut round = true;
     let mut time_font = "".to_string();
     let mut show_time = 0.0;
+    let mut time_countdown = false;
     let mut image = Err("".to_string());
     for (sec, prop) in i.iter() {
         if let Some(s) = sec {
@@ -96,6 +97,8 @@ fn main() -> Result<(), eframe::Error> {
                         time_font = v.to_string();
                     } else if k == "round" {
                         round = v != "0";
+                    } else if k == "time_countdown" {
+                        time_countdown = v != "0";
                     } else if k == "bg" {
                         let bg_path = std::path::PathBuf::from(v);
                         let result = fs::File::open(&bg_path);
@@ -200,7 +203,8 @@ fn main() -> Result<(), eframe::Error> {
                 timezone,
                 custom_timezone,
                 time_font,
-                round
+                round,
+                time_countdown
             ).unwrap())
         }),
     )

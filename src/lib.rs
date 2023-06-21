@@ -43,12 +43,14 @@ pub struct RustClock {
     font_path: String,
     show_time: f32,
     now: DateTime<FixedOffset>,
+    time_countdown_target: u32,
     image: Result<RetainedImage, String>,
     init_show: i32,
     timezone: i32,
     custom_timezone: bool,
     time_font: String,
-    round: bool
+    round: bool,
+    time_countdown: bool
 }
 
 impl RustClock {
@@ -73,7 +75,8 @@ impl RustClock {
         timezone: i32,
         custom_timezone: bool,
         time_font: String,
-        round: bool
+        round: bool,
+        time_countdown: bool
     ) -> Result<RustClock, &'static str> {
         Ok(RustClock {
             quit_index,
@@ -105,12 +108,14 @@ impl RustClock {
             font_path,
             show_time,
             now: Local::now().into(),
+            time_countdown_target: 0,
             image,
             init_show,
             timezone,
             custom_timezone,
             time_font,
-            round
+            round,
+            time_countdown
         })
     }
 }
@@ -179,6 +184,16 @@ impl eframe::App for RustClock {
                 self.show_time = 100.0;
             } else {
                 self.show_time = self.show_time / 16.0;
+            }
+            if self.time_countdown == true && self.time2show != "" {
+                let time2show_arr: Vec<&str> = self.time2show.split(',').collect();
+                for x in &time2show_arr {
+                    let single_time: Vec<&str> = x.split(':').collect();
+                    if single_time[0] != "" && single_time[1] != "" && single_time[2] != "" {
+                        self.time_countdown_target = single_time[0].parse::<u32>().unwrap() * 3600 + single_time[1].parse::<u32>().unwrap() * 60 + single_time[2].parse::<u32>().unwrap();
+                        break;
+                    }
+                }
             }
         }
         
@@ -344,6 +359,18 @@ impl eframe::App for RustClock {
                     }
                 }
             }
+        }
+        if self.countdown_start == false && self.time_countdown == true && self.time_countdown_target != 0 {
+            let hour = self.now.hour();
+            let minute = self.now.minute();
+            let second = self.now.second();
+            let mut gap_time = hour * 3600 + minute * 60 + second;
+            if gap_time > self.time_countdown_target {
+                gap_time = self.time_countdown_target + 24 * 3600 - gap_time;
+            } else {
+                gap_time = self.time_countdown_target - gap_time;
+            }
+            custom_clock = format!("{:02}:{:02}:{:02}", gap_time / 3600 as u32, gap_time % 3600 / 60 as u32 , gap_time % 60 as u32);
         }
         if self.tikpop == true {
             self.time += 1.0;
