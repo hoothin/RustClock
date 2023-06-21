@@ -29,6 +29,7 @@ Edit the conf.ini beside rust_clock, delete `#`.
 11. [timezone 時區](#timezone)
 12. [time_font 時間數字字體](#time_font)
 13. [round 圓角](#round)
+14. [time_countdown 定點倒計時](#time_countdown)
 
 ---
 
@@ -181,4 +182,12 @@ time_font=C:/Windows/Fonts/zongyi.TTF
 > 是否使用圓角邊框，0 為 否
 ``` ini
 round=0
+```
++ time_countdown
+<a id="time_countdown"></a>
+> Show countdown until reach first full-set `time`, 1 means enable
+>
+> 顯示直到`time`中第一個時分秒都完整設置時間的倒計時，1 為 啓用
+``` ini
+time_countdown=1
 ```
