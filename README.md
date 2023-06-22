@@ -187,7 +187,7 @@ round=0
 <a id="time_countdown"></a>
 > Show countdown until reach first full-set `time`, 1 means enable
 >
-> 顯示直到`time`中第一個時分秒都完整設置時間的倒計時，1 為 啓用
+> 顯示直到`time`中第一個時分秒都完整設置時間的倒計時，1 為啓用
 ``` ini
 time_countdown=1
 ```
