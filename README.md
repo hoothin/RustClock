@@ -6,7 +6,7 @@ Clock popup every half hour. Build with [rust](https://github.com/rust-lang/rust
 
 ![example](pic.gif)
 # Install
-+ [Release](https://github.com/hoothin/RustClock/releases/)
++ [Release](https://github.com/hoothin/RustClock/releases/tag/0.1.5)
 + Homebrew
 ``` bash
 brew install hoothin/rust_clock/rust_clock
