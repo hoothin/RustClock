@@ -184,9 +184,9 @@ round=0
 ```
 + time_countdown
 <a id="time_countdown"></a>
-> Show countdown until reach first full-set `time`, 1 means enable
+> Show countdown until reach first full-set `time`, the difference from `countdown` is that this item displays a countdown to a fixed time point, rather than a cyclic countdown from the startup time, 1 means enable
 >
-> 顯示直到`time`中第一個時分秒都完整設置時間的倒計時，1 為啓用
+> 顯示直到`time`中第一個時分秒都完整設置時間的倒計時，1 為啓用，與`countdown`的區別為此項顯示到固定時間點的倒計時，而非自啓動時間起的循環倒計時
 ``` ini
 time_countdown=1
 ```
