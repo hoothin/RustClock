@@ -36,7 +36,7 @@ Edit the conf.ini beside rust_clock, delete `#`.
 <a id="time"></a>
 > The time when rust clock will popup, set by `hour:minute:second`. Split multi-time by `,`.
 > 
-> 設置 rust clock 彈出的時刻，使用 `時:分:秒` 的格式，多個時刻使用 `,` 分隔。
+> 設置 rust clock 彈出的時刻，使用 `時:分:秒` 的格式，多個時刻使用 `,` 分隔。彈出時無視倒計時。
 ``` ini
 # popup every half hour per clock
 # 每個鐘頭的 30 分鐘彈出
@@ -71,7 +71,7 @@ sound=assets/1.mp3|assets/2.mp3*assets/3.mp3|assets/4.mp3
 <a id="countdown"></a>
 > The countdown time, set by `hour:minute:second`. Split multi-time by `,`.
 >
-> 倒計時，使用 `時:分:秒` 的格式，多個倒計時使用 `,` 分隔。
+> 倒計時，使用 `時:分:秒` 的格式，多個倒計時使用 `,` 分隔。默認為 10 分鐘，開啓後會循環啓動。
 ``` ini
 # 20-20-20 Rule 護眼法則
 countdown=:20:,::20
